@@ -275,5 +275,9 @@ var WorkspaceToolbar = Backbone.View.extend({
         window.location = Settings.REST_URL +
             Saiku.session.username + "/query/" + 
             this.workspace.query.id + "/export/csv";
+    },
+    
+    toggle_wrapping: function(event) {       
+       $(this.workspace.el).find('.workspace_results').toggleClass('wrap');
     }
 });

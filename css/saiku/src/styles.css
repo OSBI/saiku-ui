@@ -849,6 +849,9 @@ html, body {
     margin-bottom: 0;
     white-space: nowrap;
 }
+.wrap table th {
+    white-space: normal;
+}
 .workspace_results table th.all_null {
     text-align: center;
     border: none;
@@ -1026,6 +1029,9 @@ html, body {
 }
 .workspace_toolbar .query_scenario {
     background-position: -781px 7px;
+}
+.workspace_toolbar .toggle_wrapping {
+    background-position: 7px -189px;
 }
 
 .workspace_toolbar .switch_to_mdx {
