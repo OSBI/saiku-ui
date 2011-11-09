@@ -279,5 +279,6 @@ var WorkspaceToolbar = Backbone.View.extend({
     
     toggle_wrapping: function(event) {       
        $(this.workspace.el).find('.workspace_results').toggleClass('wrap');
+       $(event.target).toggleClass('on');
     }
 });
