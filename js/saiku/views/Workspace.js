@@ -27,13 +27,14 @@ var Workspace = Backbone.View.extend({
     events: {
         'click .sidebar_separator': 'toggle_sidebar',
         'change .cubes': 'new_query',
-        'drop': 'remove_dimension'
+        'drop': 'remove_dimension',
+        'click .refresh_cubes' : 'refresh'
     },
     
     initialize: function(args) {
         // Maintain `this` in jQuery event handlers
         _.bindAll(this, "adjust", "toggle_sidebar", "prepare", "new_query", 
-                "init_query", "update_caption", "select_dimension", "populate_selections");
+                "init_query", "update_caption", "select_dimension", "populate_selections","refresh");
                 
         // Attach an event bus to the workspace
         _.extend(this, Backbone.Events);
@@ -74,6 +75,10 @@ var Workspace = Backbone.View.extend({
         return _.template(template)({
             cube_navigation: Saiku.session.sessionworkspace.cube_navigation
         });        
+    },
+
+    refresh: function() {
+        Saiku.session.sessionworkspace.refresh();
     },
     
     render: function() {
@@ -119,12 +124,15 @@ var Workspace = Backbone.View.extend({
     adjust: function() {
         // Adjust the height of the separator
         $separator = $(this.el).find('.sidebar_separator');
-        $separator.height($("body").height() - 87);
-        $(this.el).find('.sidebar').height($("body").height() - 87);
+        var heightReduction = 87;
+        if (Settings.PLUGIN == true || Settings.BIPLUGIN == true) {
+            heightReduction = 2;
+        }
+        $separator.height($("body").height() - heightReduction);
+        $(this.el).find('.sidebar').height($("body").height() - heightReduction);
         
         // Adjust the dimensions of the results window
         $(this.el).find('.workspace_results').css({
-//            width: $(document).width() - $(this.el).find('.sidebar').width() - 30,
             height: $(document).height() - $("#header").height() -
                 $(this.el).find('.workspace_toolbar').height() - 
                 $(this.el).find('.workspace_fields').height() - 40
@@ -262,11 +270,10 @@ var Workspace = Backbone.View.extend({
                             }
                             
                             $dim.css({fontWeight: "bold"})
-                                .draggable('disable')                                    
+                                .draggable('disable')
                                 .parents('.parent_dimension')
-                                .find('.root')
-                                .css({fontWeight: "bold"})
-                                .draggable('disable'); 
+                                .find('.folder_collapsed')
+                                .css({fontWeight: "bold"}); 
                             levels.push(name);
                         }
                         

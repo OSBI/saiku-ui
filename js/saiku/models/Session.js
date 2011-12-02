@@ -37,8 +37,6 @@ var Session = Backbone.Model.extend({
         if (options && options.username && options.password) {
             this.username = options.username;
             this.password = options.password;
-            console.log("hat options");
-            console.log(options);
             this.save({username:this.username, password:this.password},{success: this.check_session, error: this.check_session});
 
         } else {
@@ -47,7 +45,6 @@ var Session = Backbone.Model.extend({
     },
 
     check_session: function() {
-        //alert((this.sessionid === null || this.username === null || this.password === null));
         if (this.sessionid === null || this.username === null || this.password === null) {
             this.clear();
             this.fetch({ success: this.process_session })
@@ -62,7 +59,6 @@ var Session = Backbone.Model.extend({
 
     process_session: function(model, response) {
         if ((response === null || response.sessionid == null)) {
-            console.log(response);
             // Open form and retrieve credentials
             Saiku.ui.unblock();
             this.form = new LoginForm({ session: this });
