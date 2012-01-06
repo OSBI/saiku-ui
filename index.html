@@ -47,6 +47,10 @@
         <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/backbone.js/0.5.3/backbone-min.js"></script>
         <script>typeof(Backbone) !== "undefined" || document.write('<script src="js/backbone/backbone.js"><\/script>')</script>
         
+        <!-- Loggly error logging service -->
+        <script type="text/javascript" src="js/logger/janky.post.min.js"></script>
+        <script type="text/javascript" src="js/logger/Logger.js" defer></script>
+
         <!-- Saiku Project -->
         <script type="text/javascript" src="js/saiku/Settings.js"></script>
         <script type="text/javascript" src="js/saiku/models/Dimension.js"></script>
@@ -56,6 +60,7 @@
         <script type="text/javascript" src="js/saiku/views/MDXModal.js"></script>
         <script type="text/javascript" src="js/saiku/views/SelectionsModal.js"></script>
         <script type="text/javascript" src="js/saiku/views/DrillthroughModal.js"></script>
+        <script type="text/javascript" src="js/saiku/views/DrillthroughViewModal.js"></script>
         <script type="text/javascript" src="js/saiku/views/LoginForm.js"></script>
         <script type="text/javascript" src="js/saiku/views/AboutModal.js"></script>
         <script type="text/javascript" src="js/saiku/views/WorkspaceToolbar.js"></script>
@@ -78,11 +83,7 @@
         <script type="text/javascript" src="js/saiku/Saiku.js"></script>
         <script type="text/javascript" src="js/saiku/adapters/SaikuServer.js"></script>
         <script type="text/javascript" src="js/saiku/routers/QueryRouter.js"></script>
-        
-        <!-- Loggly error logging service -->
-        <script type="text/javascript" src="js/logger/janky.post.min.js"></script>
-        <script type="text/javascript" src="js/logger/Logger.js" defer></script>
-        
+                
         <!-- Saiku plugins -->
         <script type="text/javascript" src="js/saiku/plugins/Chart/plugin.js" defer></script>
         <script type="text/javascript" src="js/saiku/plugins/I18n/plugin.js" defer></script>
@@ -112,7 +113,7 @@
         <% if (dimension.name != 'Measures') { %>
             <li class='parent_dimension'>
                 <span class="root collapsed sprite"></span>
-                <a class="folder_collapsed sprite" href="#" title="<%= dimension.description ? dimension.description : '' %>"><%= dimension.caption %></a>
+                <a class="folder_collapsed sprite" href="#" title="<%= dimension.description ? dimension.description : dimension.caption %>"><%= dimension.caption %></a>
                 
                 <ul>
                 <% _.each(dimension.hierarchies, function(hierarchy) { %>
@@ -235,10 +236,10 @@
             <li><a href="#show_mdx" 
                 class="i18n mdx button disabled_toolbar sprite" 
                 title="Show MDX"></a></li>
-            <li><a href="#query_scenario" 
+            <li class="seperator"><a href="#query_scenario" 
                 class="i18n table_mode query_scenario button disabled_toolbar sprite" 
                 title="Query Scenario"></a></li>
-            <li><a href="#drillthrough" 
+            <li class="seperator"><a href="#drillthrough" 
                 class="i18n table_mode drillthrough button disabled_toolbar sprite" 
                 title="Drill through current query"></a></li>
             <li><a href="#export_drillthrough" 
@@ -310,6 +311,9 @@
                 <br />
                 <b>CAUTION:</b> The number of rows can have a significant impact on the performance of the following action.
             </div>
+        </script>
+        <script type="text/x-jquery-tmpl" id="template-drillthrough-view">
+            <div class="workspace_results">
         </script>
         <script type="text/javascript" src="js/ga.js"></script>
     </body>

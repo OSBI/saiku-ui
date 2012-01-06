@@ -29,9 +29,9 @@ var WorkspaceDropZone = Backbone.View.extend({
     },
     
     events: {
-        'sortstop': 'select_dimension',
-        'click a': 'selections',
-        'click span': 'selections'
+        'sortbeforestop': 'select_dimension',
+        'click .d_dimension': 'selections',
+        'click .d_measure' : 'remove_dimension'
     },
     
     initialize: function(args) {
@@ -40,7 +40,7 @@ var WorkspaceDropZone = Backbone.View.extend({
         
         // Maintain `this` in jQuery event handlers
         _.bindAll(this, "select_dimension", "move_dimension", 
-                "remove_dimension");
+                "remove_dimension", "update_selections");
     },
     
     render: function() {
@@ -58,20 +58,34 @@ var WorkspaceDropZone = Backbone.View.extend({
             items: '> li',
             opacity: 0.60,
             placeholder: 'placeholder',
-            tolerance: 'pointer'
+            tolerance: 'pointer',
+            
+            start: function(event, ui) {
+                ui.placeholder.text(ui.helper.text());
+            }
+
         });
         
         return this; 
     },
     
     select_dimension: function(event, ui) {
+
+        $axis = ui.item.parents('.fields_list_body');
+        var target = "";
+        
+        if ($axis.hasClass('rows')) target = "ROWS";
+        if ($axis.hasClass('columns')) target = "COLUMNS";
+        if ($axis.hasClass('filter')) target = "FILTER";
+
+
         // Short circuit if this is a move
         if (ui.item.hasClass('d_measure') ||
                 ui.item.hasClass('d_dimension')) {
-            this.move_dimension(event, ui);
+            this.move_dimension(event, ui, target);
             return;
         }
-        
+
         // Make the element and its parent bold
         var original_href = ui.item.find('a').attr('href');
         var $original = $(this.workspace.el).find('.sidebar')
@@ -83,6 +97,7 @@ var WorkspaceDropZone = Backbone.View.extend({
             .find('.folder_collapsed')
             .css({fontWeight: "bold"});
         
+
         // Wrap with the appropriate parent element
         if (ui.item.find('a').hasClass('dimension')) {
             var $icon = $("<span />").addClass('sprite');
@@ -90,34 +105,131 @@ var WorkspaceDropZone = Backbone.View.extend({
         } else {
             ui.item.addClass('d_measure');
         }
-        
+
+
+
+        var member = ui.item.find('a').attr('href').replace('#', '');
+        var dimension = member.split('/')[0];
+        var dimensions = [];
+
+        this.update_selections(event,ui);
+
+        $axis.find('a').each( function(i,element) {
+            var imember = $(element).attr('href');
+            var idimension = imember.replace('#', '').split('/')[0]; 
+            if (dimensions.indexOf(idimension) == -1) {
+                dimensions.push(idimension);
+            }
+        });
+
+        var index = dimensions.indexOf(dimension);
+
+
         // Notify the model of the change
-        var dimension = ui.item.find('a').attr('href').replace('#', '');
-        var index = ui.item.parent('.connectable').children().index(ui.item);
-        this.workspace.query.move_dimension(dimension, 
-                $(event.target).parent(), index);
-        
+        this.workspace.query.move_dimension(member, 
+                target, index);
+
         // Prevent workspace from getting this event
-        return false;
+        return true;
     },
     
-    move_dimension: function(event, ui) {
-        // Notify the model of the change
-        var dimension = ui.item.find('a').attr('href').replace('#', '');
-        var index = ui.item.parent('.connectable').children().index(ui.item);
+    move_dimension: function(event, ui, target) {
         if (! ui.item.hasClass('deleted')) {
-            this.workspace.query.move_dimension(dimension, 
-                ui.item.parents('.fields_list_body'), index);
+            $axis = ui.item.parents('.fields_list_body');
+
+            // Notify the model of the change
+            var dimension = ui.item.find('a').attr('href').replace('#', '').split('/')[0];
+            var dimensions = [];
+
+            this.update_selections(event,ui);
+
+            $axis.find('a').each( function(i,element) {
+                var imember = $(element).attr('href');
+                var idimension = imember.replace('#', '').split('/')[0]; 
+                if (dimensions.indexOf(idimension) == -1) {
+                    dimensions.push(idimension);
+                }
+            });
+            var index = dimensions.indexOf(dimension);
+
+            
+                this.workspace.query.move_dimension(dimension, 
+                    target, index);
         }
         
         // Prevent workspace from getting this event
         event.stopPropagation();
         return false;
     },
-    
+
+    update_selections: function(event, ui) {
+        var member = ui.item.find('a').attr('href');
+        var dimension = member.replace('#', '').split('/')[0];
+        var index = ui.item.parent('.connectable').children().index(ui.item);
+        var axis = ui.item.parents('.fields_list_body');
+        var allAxes = axis.parent().parent();
+        var target = '';
+        var source = '';
+        var myself = this;
+        var $originalItem =  $(myself.workspace.el).find('.sidebar')
+                                    .find('a[href="' + member + '"]').parent();
+        var insertElement = $(ui.item);
+        var type = $(ui.item).hasClass('d_dimension') ? "d_dimension" : "d_measure";
+
+        source = ".rows, .columns, .filter";
+        allAxes.find(source).find('a').each( function(index, element) {
+            var p_member = $(element).attr('href').replace('#', '');
+            var p_dimension = p_member.split('/')[0];
+            if (p_dimension == dimension && (( "#" + p_member) != member )) {
+                $(element).parent().remove();
+            }
+        });
+        
+        var n_dimension = null;
+        var p_dimension = null;
+
+        
+        var prev = $(ui.item).prev();
+        if (prev && prev.length > 0) {
+            var p_member = prev.find('a').attr('href');
+            p_dimension = p_member.replace('#', '').split('/')[0];
+        }
+        var next = $(ui.placeholder).next();
+
+        while (p_dimension != null && next && next.length > 0 ) {
+            var n_member = next.find('a').attr('href');
+            n_dimension = n_member.replace('#', '').split('/')[0]; 
+            if (p_dimension == n_dimension) {
+                next.insertBefore($(ui.item));
+            } else {
+                p_dimension = null;
+            }
+            next = $(ui.placeholder).next();
+        }
+            
+
+        $originalItem.parent().find('.ui-draggable-disabled').clone().attr('class', 'ui-draggable').removeAttr('style')
+                                .addClass(type)
+                                .insertAfter(insertElement);
+        
+
+        axis.find('.d_dimension a').each( function(index, element) {
+            element = $(element);
+            if (!element.prev() || (element.prev() && element.prev().length == 0)) {
+                var $icon = $("<span />").addClass('sprite');
+                $icon.insertBefore(element);
+            }
+        });
+
+        $(ui.item).remove();
+
+    },
+
+
     remove_dimension: function(event, ui) {
         // Reenable original element
-        var original_href = ui.draggable.find('a').attr('href');
+        var $source = ui ? ui.draggable : $(event.target).parent();
+        var original_href = $source.find('a').attr('href');
         var $original = $(this.workspace.el).find('.sidebar')
             .find('a[href="' + original_href + '"]').parent('li');
         $original
@@ -135,7 +247,7 @@ var WorkspaceDropZone = Backbone.View.extend({
         // Notify server
         var target = '';
         var dimension = original_href.replace('#', '');
-        $target_el = ui.draggable.parent().parent('div.fields_list_body');
+        $target_el = $source.parent().parent('div.fields_list_body');
         if ($target_el.hasClass('rows')) target = "ROWS";
         if ($target_el.hasClass('columns')) target = "COLUMNS";
         if ($target_el.hasClass('filter')) target = "FILTER";
@@ -146,7 +258,7 @@ var WorkspaceDropZone = Backbone.View.extend({
         });
         
         // Remove element
-        ui.draggable.addClass('deleted').remove();
+        $source.addClass('deleted').remove();
         
         // Prevent workspace from getting this event
         event.stopPropagation();

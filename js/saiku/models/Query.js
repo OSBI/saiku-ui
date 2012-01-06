@@ -75,30 +75,50 @@ var Query = Backbone.Model.extend({
     
     run: function(force) {
         // Check for automatic execution
-        if (! this.properties.properties['saiku.olap.query.automatic_execution'] &&
-            ! force) {
+
+        
+        if ( (this.properties.properties['saiku.olap.query.automatic_execution'] == "false") &&
+            ! (force === true)) {
             return;
         }
-        
+
         // TODO - Validate query
-        
+        // maybe we should sync it with the backend query JSON?
+        // this definitely needs improvement
+        var rows = 0;
+        var columns = 0;
+        if (Settings.MODE == "view" || Settings.MODE == "table") {
+        var axes = this.get('axes');
+        if (axes) {
+            for (var axis_iter = 0; axis_iter < axes.length; axis_iter++) {
+                var axis = axes[axis_iter];
+                if (axis.name && axis.name == "ROWS") {
+                    rows = axis.dimensionSelections.length;
+                }
+                if (axis.name && axis.name == "COLUMNS") {
+                    columns = axis.dimensionSelections.length;
+                }
+            }
+        }
+        } else {
+            rows = $(this.workspace.el).find('.rows ul li').size();
+            columns = $(this.workspace.el).find('.columns ul li').size(); 
+        }
+
+        if (rows == 0 || columns == 0) {
+            $(this.workspace.el).find('.workspace_results table')
+                .html('<tr><td><span class="i18n">You need to put at least one level or measure on Columns and Rows for a valid query.</td></tr>');
+            return;
+        }
         // Run it
         $(this.workspace.el).find('.workspace_results table')
             .html('<tr><td>Running query...</td></tr>');
         this.result.fetch();
     },
     
-    move_dimension: function(dimension, $target_el, index) {
+    move_dimension: function(dimension, target, index) {
         $(this.workspace.el).find('.run').removeClass('disabled_toolbar');
-        
-        var target = '';
-        if ($target_el.hasClass('rows')) target = "ROWS";
-        if ($target_el.hasClass('columns')) target = "COLUMNS";
-        if ($target_el.hasClass('filter')) target = "FILTER";
-        
         var url = "/axis/" + target + "/dimension/" + dimension;
-        var index = $target_el.find('li.ui-draggable').index(
-                $target_el.find('a[href="#' + dimension + '"]').parent() );
         
         this.action.post(url, {
             data: {

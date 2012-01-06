@@ -22,13 +22,13 @@
  * Change settings here
  */
 var Settings = {
-    VERSION: "Saiku Suite 2.2 SNAPSHOT",
+    VERSION: "Saiku Suite 2.2 RC1",
     BIPLUGIN: false,
     BASE_URL: "",
     TOMCAT_WEBAPP: "/saiku",
     REST_MOUNT_POINT: "/rest/saiku/",
     DIMENSION_PREFETCH: true,
-    ERROR_LOGGING: false,
+    ERROR_LOGGING: true,
     QUERY_PROPERTIES: {
         'saiku.olap.query.automatic_execution': 'true',
         'saiku.olap.query.nonempty': 'true',
@@ -68,3 +68,35 @@ _.extend(Settings, Settings.GET);
 Settings.REST_URL = Settings.BASE_URL
     + Settings.TOMCAT_WEBAPP 
     + Settings.REST_MOUNT_POINT;
+
+
+/**
+ * < IE9 doesn't support Array.indexOf
+ */
+if (!Array.prototype.indexOf)
+{
+  Array.prototype.indexOf = function(elt /*, from*/)
+  {
+    var len = this.length >>> 0;
+
+    var from = Number(arguments[1]) || 0;
+    from = (from < 0)
+         ? Math.ceil(from)
+         : Math.floor(from);
+    if (from < 0)
+      from += len;
+
+    for (; from < len; from++)
+    {
+      if (from in this &&
+          this[from] === elt)
+        return from;
+    }
+    return -1;
+  };
+}
+
+if (window.location.hostname && (window.location.hostname == "dev.analytical-labs.com" || window.location.hostname == "demo.analytical-labs.com" )) {
+    Settings.USERNAME = "admin";
+    Settings.PASSWORD = "admin";
+}
