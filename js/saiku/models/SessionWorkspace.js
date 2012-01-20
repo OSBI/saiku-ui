@@ -32,11 +32,12 @@ var SessionWorkspace = Backbone.Model.extend({
         _.extend(this, Backbone.Events);
         _.bindAll(this, "process_datasources", "prefetch_dimensions");
         this.initialized = false;
-
+        this.first = true;
         // Check expiration on localStorage
         if (localStorage && ! (localStorage.getItem('expiration') > (new Date()).getTime())) {
             localStorage.clear();
         }
+        Saiku.ui.block("Loading datasources....");
         this.fetch({success:this.process_datasources},{});
         
     },
@@ -139,7 +140,8 @@ var SessionWorkspace = Backbone.Model.extend({
     },
     
     url: function() {
-        if (!this.initialized) {
+        if (this.first) {
+            this.first = false;
             return encodeURI(Saiku.session.username + "/discover/");
         }
         else {
