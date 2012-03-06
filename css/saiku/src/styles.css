@@ -914,6 +914,9 @@ background: url("../../../images/src/sort_none.png") no-repeat;
     margin-bottom: 0;
     white-space: nowrap;
 }
+.wrap table th {
+    white-space: normal;
+}
 .workspace_results table th.all_null {
     text-align: center;
     border: none;
@@ -1096,6 +1099,9 @@ background: url("../../../images/src/sort_none.png") no-repeat;
 .workspace_toolbar .query_scenario {
     background-image: url('../../../images/src/query_scenario.png');
     background-position: 7px 7px;
+}
+.workspace_toolbar .toggle_wrapping {
+    background-position: 7px -189px;
 }
 
 .workspace_toolbar .switch_to_mdx {
