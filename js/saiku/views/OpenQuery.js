@@ -34,6 +34,14 @@ var OpenQuery = Backbone.View.extend({
     template: function() {
         return _.template($("#template-open-dialog").html())();        
     },
+
+    template_saved_queries: function( queries ) {
+        $(this.el).find('.sidebar ul').html(
+            _.template( $( '#template-open-queries' ).html( ) )( {
+                queries: queries
+            } ) 
+        );
+    },
     
     caption: function() {
         return "Repository";
@@ -65,18 +73,12 @@ var OpenQuery = Backbone.View.extend({
     },
     
     populate: function(response) {
-        this.queries = {};
-        var $ul = $(this.el).find('.sidebar ul').html('');
-        for (var i = 0; i < response.length; i++) {
-            var query = response[i];
-            this.queries[query.name] = query;
-            var $link = $("<a />").text(query.name)
-                .attr({ href: "#" + query.name });
-            var $icon = $("<span class='sprite'></span>");
-            $("<li />").append($icon)
-                .append($link)
-                .appendTo($ul);
-        }
+        var self = this;
+        self.template_saved_queries( response );
+        self.queries = {};
+        _.forEach( response, function( query ) {
+            self.queries[ query.name ] = query; 
+        } );
     },
     
     view_query: function(event) {

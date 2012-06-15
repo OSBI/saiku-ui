@@ -270,30 +270,36 @@
         </script>
         
         <script type="text/x-jquery-tmpl" id="template-open-dialog">
-        <div class="workspace">
-            <div class="workspace_inner">
-                <div class="workspace_toolbar hide">
-                <ul>
-                    <li><a href="#open_query" class="open button sprite"></a></li>
-                    <li><a href="#delete_query" class="delete button sprite"></a></li>
-                </ul>
-                </div>
-                <div class="workspace_results">
+            <div class="workspace">
+                <div class="workspace_inner">
+                    <div class="workspace_toolbar hide">
+                    <ul>
+                        <li><a href="#open_query" class="open button sprite"></a></li>
+                        <li><a href="#delete_query" class="delete button sprite"></a></li>
+                    </ul>
+                    </div>
+                    <div class="workspace_results">
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="sidebar">
-            <h3 class="top i18n">Queries</h3>
-            <div class="sidebar_inner">
-                <ul id="queries">
-                    <li>Loading...</li>
-                </ul>
+            <div class="sidebar">
+                <h3 class="top i18n">Queries</h3>
+                <div class="sidebar_inner">
+                    <ul id="queries">
+                        <li>Loading...</li>
+                    </ul>
+                </div>
             </div>
-        </div>
-        
-        <div class="sidebar_separator"></div>
-        <div class="clear"></div>
+            
+            <div class="sidebar_separator"></div>
+            <div class="clear"></div>
+        </script>
+
+        <script type="text/x-jquery-tmpl" id="template-open-queries">
+            <% _.each( queries, function( query ) { %>
+                <li><span class='sprite'></span> <a href='#<%= query.name %>'><%= query.name %></a></li>
+            <% } ); %>
         </script>
 
         <script type="text/x-jquery-tmpl" id="template-selections">
