@@ -332,11 +332,22 @@ html, body {
     margin: 0;
     padding-bottom: 5px;
 }
-#queries li span {
+#queries li .sprite {
 	background-position: -1855px 0;
 	padding: 4px 8px;
 	margin-right: 4px;
 }
+#queries li .sprite.folder {
+    background-position: -1538px -95px;
+    cursor: pointer;
+    padding: 5px 17px;
+}
+#queries li .sprite.folder.collapsed {
+    background-position: -1406px -95px;
+    cursor: pointer;
+    padding: 5px 17px;
+}
+
 #queries li a {
     color: #222;
     text-decoration: none;

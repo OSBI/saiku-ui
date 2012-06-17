@@ -298,7 +298,25 @@
 
         <script type="text/x-jquery-tmpl" id="template-open-queries">
             <% _.each( queries, function( query ) { %>
-                <li><span class='sprite'></span> <a href='#<%= query.name %>'><%= query.name %></a></li>
+                <% if( query.type === 'folder' ) { %>
+                    <li class='folder'>
+                        <span class='sprite folder collapsed'></span>
+                        <a href='#'><%= query.name %></a>
+                        <ul class='hide'>
+                            <% _.each( query.queries, function( query ) { %>
+                                <li class='query'>
+                                    <span class='sprite'></span>
+                                    <a href='#<%= query.name %>'><%= query.name %></a>
+                                </li>
+                            <% } ); %>
+                        </ul>
+                    </li>
+                <% } else { %>
+                    <li class='query'>
+                        <span class='sprite'></span>
+                        <a href='#<%= query.name %>'><%= query.name %></a>
+                    </li>
+                <% } %>
             <% } ); %>
         </script>
 

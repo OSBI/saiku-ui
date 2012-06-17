@@ -25,8 +25,9 @@ var OpenQuery = Backbone.View.extend({
     className: 'tab_container',
     
     events: {
-        'click #queries li': 'view_query',
-        'dblclick #queries li': 'select_and_open_query',
+        'click #queries li.query': 'view_query',
+        'dblclick #queries li.query': 'select_and_open_query',
+        'click #queries li.folder': 'toggle_folder',
         'click .workspace_toolbar a.open': 'open_query',
         'click .workspace_toolbar a.delete': 'delete_query'
     },
@@ -36,6 +37,24 @@ var OpenQuery = Backbone.View.extend({
     },
 
     template_saved_queries: function( queries ) {
+        /* mock */
+        console.info( queries );
+        queries = [ 
+            {
+                type: 'query',
+                name: '123',
+            },
+            {
+                type: 'folder',
+                name: 'a folder',
+                queries: [
+                    {
+                        type: 'query',
+                        name: '33'
+                    }
+                ]
+            }
+        ]
         $(this.el).find('.sidebar ul').html(
             _.template( $( '#template-open-queries' ).html( ) )( {
                 queries: queries
@@ -102,6 +121,20 @@ var OpenQuery = Backbone.View.extend({
         
         this.selected_query = new SavedQuery({ name: name });
         
+        return false;
+    },
+
+    toggle_folder: function( event ) {
+        $target = $(event.currentTarget);
+        var $queries = $target.find( 'ul' );
+        var isClosed = $queries.hasClass( 'hide' );
+        if( isClosed ) {
+            $target.find( '.sprite' ).removeClass( 'collapsed' );
+            $queries.removeClass( 'hide' );
+        } else {
+            $target.find( '.sprite' ).addClass( 'collapsed' );
+            $queries.addClass( 'hide' );
+        }
         return false;
     },
 
