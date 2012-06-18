@@ -36,7 +36,7 @@ var OpenQuery = Backbone.View.extend({
         return _.template($("#template-open-dialog").html())();        
     },
 
-    template_saved_queries: function( queries ) {
+    template_repository_objects: function( queries ) {
         /* mock */
         console.info( queries );
         queries = {
@@ -68,7 +68,7 @@ var OpenQuery = Backbone.View.extend({
             ]
         }
         $(this.el).find('.sidebar ul').html(
-            _.template( $( '#template-open-queries' ).html( ) )( {
+            _.template( $( '#template-repository-objects' ).html( ) )( {
                 repositoryObjects: queries.repositoryObjects
             } ) 
         );
@@ -105,7 +105,7 @@ var OpenQuery = Backbone.View.extend({
     
     populate: function(response) {
         var self = this;
-        self.template_saved_queries( response );
+        self.template_repository_objects( response );
         self.queries = {};
         _.forEach( response, function( query ) {
             self.queries[ query.name ] = query; 
