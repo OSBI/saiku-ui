@@ -39,25 +39,37 @@ var OpenQuery = Backbone.View.extend({
     template_saved_queries: function( queries ) {
         /* mock */
         console.info( queries );
-        queries = [ 
-            {
-                type: 'query',
-                name: '123',
-            },
-            {
-                type: 'folder',
-                name: 'a folder',
-                queries: [
-                    {
-                        type: 'query',
-                        name: '33'
-                    }
-                ]
-            }
-        ]
+        queries = {
+            repositoryObjects : [
+                {
+                    type: 'folder',
+                    name: 'a folder',
+                    id: '12345',
+                    roleObjects: [
+                        {
+                            name: 'Rolle1',
+                            type: 'role/user',
+                            permissions: [ 'read', 'write' ]
+                        }
+                    ],
+                    repositoryObjects : [
+                        {
+                            type: 'query',
+                            name: '33',
+                            roles: []
+                        }
+                    ]
+                },
+                {
+                    type: 'query',
+                    name: '123',
+                    roles: []
+                }
+            ]
+        }
         $(this.el).find('.sidebar ul').html(
             _.template( $( '#template-open-queries' ).html( ) )( {
-                queries: queries
+                repositoryObjects: queries.repositoryObjects
             } ) 
         );
     },
