@@ -24,6 +24,11 @@
 var SaveQuery = Modal.extend({
     type: "save",
     closeText: "Save",
+
+    events: {
+        'click a': 'call',
+        'submit form': 'save'
+    },
     
     buttons: [
         { text: "OK", method: "save" }
@@ -38,13 +43,11 @@ var SaveQuery = Modal.extend({
             "please type a name in the text box below:</label><br />" +
             "<input type='text' name='name' value='<%= name %>' />" +
             "</form>")({ name: name });
+
         _.extend(this.options, {
             title: "Save query"
         });
-        
-        // Focus on query name
-        $(this.el).find('input').select().focus();
-        
+
         // Maintain `this`
         _.bindAll(this, "copy_to_repository", "close");
     },
