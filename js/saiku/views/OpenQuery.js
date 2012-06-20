@@ -25,11 +25,14 @@ var OpenQuery = Backbone.View.extend({
     className: 'tab_container',
     
     events: {
-        'click #queries li.query': 'view_query',
-        'dblclick #queries li.query': 'select_and_open_query',
-        'click #queries li.folder': 'toggle_folder',
+        'click .query': 'view_query',
+        'dblclick .query': 'select_and_open_query',
+        'click .add_folder' : 'add_folder',
+        'click li.folder': 'toggle_folder',
         'click .workspace_toolbar a.open': 'open_query',
-        'click .workspace_toolbar a.delete': 'delete_query'
+        'click .workspace_toolbar [href=#edit_folder]': 'edit_folder',
+        'click .workspace_toolbar [href=#delete_folder]': 'delete_folder',
+        'click .workspace_toolbar [href=#delete_query]': 'delete_query'
     },
     
     template: function() {
@@ -113,13 +116,15 @@ var OpenQuery = Backbone.View.extend({
     },
     
     view_query: function(event) {
-        $target = $(event.currentTarget).find('a');
+        var $target = $(event.currentTarget).find('a');
         var name = $target.attr('href').replace('#', '');
         var query = this.queries[name];
         
-        $(this.el).find('.workspace_toolbar').removeClass('hide');
+        $(this.el).find('.workspace_toolbar').removeClass( 'hide' );
+        $( this.el ).find( '.for_folder' ).addClass( 'hide' );
+        $( this.el ).find( '.for_queries' ).removeClass( 'hide' );
         
-        $results = $(this.el).find('.workspace_results')
+        var $results = $(this.el).find('.workspace_results')
             .html('<h3><strong>' + query.name + '</strong></h3>');
         var $properties = $('<ul id="query_info" />').appendTo($results);
         
@@ -136,8 +141,25 @@ var OpenQuery = Backbone.View.extend({
         return false;
     },
 
+    view_folder: function( event ) {
+        var $target = $( event.currentTarget ).find( 'a' );
+        var name = $target.attr( 'href' ).replace( '#', '' );
+
+        $( this.el ).find( '.workspace_toolbar' ).removeClass( 'hide' )
+        $( this.el ).find( '.for_queries' ).addClass( 'hide' );
+        $( this.el ).find( '.for_folder' ).removeClass( 'hide' );
+
+        $( this.el ).find( '.workspace_results' )
+            .html( '<h3><strong>' + name + '</strong></h3>' );
+    },
+
+    add_folder: function( event ) {
+        (new AddFolderModal).render().open();
+        return false;
+    },
+
     toggle_folder: function( event ) {
-        $target = $(event.currentTarget);
+        var $target = $( event.currentTarget );
         var $queries = $target.find( 'ul' );
         var isClosed = $queries.hasClass( 'hide' );
         if( isClosed ) {
@@ -147,6 +169,9 @@ var OpenQuery = Backbone.View.extend({
             $target.find( '.sprite' ).addClass( 'collapsed' );
             $queries.addClass( 'hide' );
         }
+
+        this.view_folder( event );
+
         return false;
     },
 
@@ -165,8 +190,9 @@ var OpenQuery = Backbone.View.extend({
         
         return false;
     },
-    
+
     delete_query: function(event) {
+        console.info( 'here: query' );
         (new DeleteQuery({
             query: this.selected_query,
             success: this.clear_query
@@ -175,6 +201,16 @@ var OpenQuery = Backbone.View.extend({
         return false;
     },
     
+    edit_folder: function( event ) {
+        alert( 'todo: edit folder properties/permissions' );
+        return false;
+    },
+    
+    delete_folder: function( event ) {
+        alert( 'todo: delete folder' );
+        return false;
+    },
+
     clear_query: function() {
         $(this.el).find('.workspace_toolbar').addClass('hide');
         $(this.el).find('.workspace_results').html('');

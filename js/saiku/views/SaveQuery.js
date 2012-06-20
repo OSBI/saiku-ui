@@ -26,21 +26,26 @@ var SaveQuery = Modal.extend({
     closeText: "Save",
 
     events: {
-        'click a': 'call',
-        'submit form': 'save'
+        'click': 'select_root_folder', /* select root folder */
+        'click .form_button': 'save',
+        'submit form': 'save',
+        'click .query': 'select_name',
+        'click li.folder': 'toggle_folder'
     },
     
     buttons: [
         { text: "OK", method: "save" }
     ],
-    
+
     initialize: function(args) {
         // Append events
+        var self = this;
         var name = args.query.name ? args.query.name : "";
         this.query = args.query;
         this.message = _.template("<form id='save_query_form'>" +
             "<label for='name'>To save a new query, " + 
-            "please type a name in the text box below:</label><br />" +
+            "please select a folder and type a name in the text box below:</label><br />" +
+            "<div class='RepositoryObjects'></div>" +
             "<input type='text' name='name' value='<%= name %>' />" +
             "</form>")({ name: name });
 
@@ -48,14 +53,121 @@ var SaveQuery = Modal.extend({
             title: "Save query"
         });
 
+        this.bind( 'open', function( ) {
+            self.get_repository_objects( self.render_repository_objects );
+        } );
+
         // Maintain `this`
-        _.bindAll(this, "copy_to_repository", "close");
+        _.bindAll( this, "copy_to_repository", "close", "get_repository_objects", "render_repository_objects", "toggle_folder", "select_name" );
     },
-    
+
+    render_repository_objects: function( repositoryObjects ) {
+        $( this.el ).find( '.RepositoryObjects' ).html(
+            _.template( $( '#template-repository-objects' ).html( ) )( {
+                repositoryObjects: repositoryObjects.repositoryObjects
+            } ) 
+        );
+    },
+
+    get_repository_objects: function( callback ) {
+        /* move to domain layer */
+        var mockRepositoryObjects = {
+            repositoryObjects : [
+                {
+                    type: 'folder',
+                    name: 'a folder',
+                    id: '12345',
+                    roleObjects: [
+                        {
+                            name: 'Rolle1',
+                            type: 'role/user',
+                            permissions: [ 'read', 'write' ]
+                        }
+                    ],
+                    repositoryObjects : [
+                        {
+                            type: 'query',
+                            name: '33',
+                            roles: []
+                        }
+                    ]
+                },
+                {
+                    type: 'folder',
+                    name: 'noch einer',
+                    id: '12345',
+                    roleObjects: [
+                        {
+                            name: 'Rolle1',
+                            type: 'role/user',
+                            permissions: [ 'read', 'write' ]
+                        }
+                    ],
+                    repositoryObjects : [
+                        {
+                            type: 'query',
+                            name: 'bla bla',
+                            roles: []
+                        },
+                        {
+                            type: 'query',
+                            name: 'muh kuh',
+                            roles: []
+                        }
+                    ]
+                },
+                {
+                    type: 'query',
+                    name: '123',
+                    roles: []
+                }
+            ]
+        }
+        callback( mockRepositoryObjects );
+    },
+
+    select_root_folder: function( event ) {
+        this.unselect_current_selected_folder( );
+    },
+
+    toggle_folder: function( event ) {
+        var $target = $( event.currentTarget );
+        this.unselect_current_selected_folder( );
+        $target.addClass( 'selected' );
+        var $queries = $target.find( 'ul' );
+        var isClosed = $queries.hasClass( 'hide' );
+        if( isClosed ) {
+            $target.find( '.sprite' ).removeClass( 'collapsed' );
+            $queries.removeClass( 'hide' );
+        } else {
+            $target.find( '.sprite' ).addClass( 'collapsed' );
+            $queries.addClass( 'hide' );
+        }
+        return false;
+    },
+
+    select_name: function( event ) {
+        var $currentTarget = $( event.currentTarget );
+        this.unselect_current_selected_folder( );
+        $currentTarget.parent( ).parent( ).has( '.folder' ).addClass( 'selected' );
+        var name = $currentTarget.find( 'a' ).attr( 'href' ).replace( '#', '' );
+        $(this.el).find('input[name="name"]').val( name );
+        return false;
+    },
+
+    unselect_current_selected_folder: function( ) {
+        $( this.el ).find( 'li.folder.selected' ).removeClass( 'selected' );
+    },
+
     save: function(event) {
         // Save the name for future reference
+        var foldername = ''; /* XXX == root, should it be something different than ''? */
+        var $folder = $(this.el).find( 'li.folder.selected a' ).first( );
+        if( $folder.length ) {
+            foldername = $folder.attr( 'href' ).replace( '#', '' );
+        }
         var name = $(this.el).find('input[name="name"]').val();
-        this.query.set({ name: name });
+        this.query.set({ name: name, foder: foldername });
         this.query.trigger('query:save');
         $(this.el).find('form').html("Saving query...");
         

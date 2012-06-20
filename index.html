@@ -69,6 +69,7 @@
         <script type="text/javascript" src="js/saiku/views/DrillthroughModal.js"></script>
         <script type="text/javascript" src="js/saiku/views/LoginForm.js"></script>
         <script type="text/javascript" src="js/saiku/views/AboutModal.js"></script>
+        <script type="text/javascript" src="js/saiku/views/AddFolderModal.js"></script>
         <script type="text/javascript" src="js/saiku/views/WorkspaceToolbar.js"></script>
         <script type="text/javascript" src="js/saiku/views/WorkspaceDropZone.js"></script>
         <script type="text/javascript" src="js/saiku/views/Table.js"></script>
@@ -274,8 +275,10 @@
                 <div class="workspace_inner">
                     <div class="workspace_toolbar hide">
                     <ul>
-                        <li><a href="#open_query" class="open button sprite"></a></li>
-                        <li><a href="#delete_query" class="delete button sprite"></a></li>
+                        <li class='for_queries'><a href="#open_query" class="open button sprite"></a></li>
+                        <li class='for_queries'><a href="#delete_query" class="delete button sprite"></a></li>
+                        <li class='for_folder'><a href="#edit_folder" class="edit_folder button"></a></li>
+                        <li class='for_folder'><a href="#delete_folder" class="delete button sprite"></a></li>
                     </ul>
                     </div>
                     <div class="workspace_results">
@@ -283,10 +286,13 @@
                 </div>
             </div>
 
-            <div class="sidebar">
-                <h3 class="top i18n">Queries</h3>
+            <div class="sidebar queries">
+                <h3 class="top i18n">
+                    Queries
+                    <a href='#' class='add_folder'></a>
+                </h3>
                 <div class="sidebar_inner">
-                    <ul id="queries">
+                    <ul id="queries" class='RepositoryObjects'>
                         <li>Loading...</li>
                     </ul>
                 </div>
@@ -301,7 +307,7 @@
                 <% if( entry.type === 'folder' ) { %>
                     <li class='folder'>
                         <span class='sprite folder collapsed'></span>
-                        <a href='#'><%= entry.name %></a>
+                        <a href='#<%= entry.name %>'><%= entry.name %></a>
                         <ul class='hide'>
                             <% _.each( entry.repositoryObjects, function( entry ) { %>
                                 <li class='query'>
