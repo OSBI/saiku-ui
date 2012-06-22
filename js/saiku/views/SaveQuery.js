@@ -53,77 +53,23 @@ var SaveQuery = Modal.extend({
             title: "Save query"
         });
 
+        // Initialize repository
+        this.repository = new Repository({}, { dialog: this });
+
         this.bind( 'open', function( ) {
-            self.get_repository_objects( self.render_repository_objects );
+            self.repository.fetch( );
         } );
 
         // Maintain `this`
-        _.bindAll( this, "copy_to_repository", "close", "get_repository_objects", "render_repository_objects", "toggle_folder", "select_name" );
+        _.bindAll( this, "copy_to_repository", "close", "toggle_folder", "select_name", "populate" );
     },
 
-    render_repository_objects: function( repositoryObjects ) {
+    populate: function( repository ) {
         $( this.el ).find( '.RepositoryObjects' ).html(
             _.template( $( '#template-repository-objects' ).html( ) )( {
-                repositoryObjects: repositoryObjects.repositoryObjects
+                repoObjects: repository
             } ) 
         );
-    },
-
-    get_repository_objects: function( callback ) {
-        /* move to domain layer */
-        var mockRepositoryObjects = {
-            repositoryObjects : [
-                {
-                    type: 'folder',
-                    name: 'a folder',
-                    id: '12345',
-                    roleObjects: [
-                        {
-                            name: 'Rolle1',
-                            type: 'role/user',
-                            permissions: [ 'read', 'write' ]
-                        }
-                    ],
-                    repositoryObjects : [
-                        {
-                            type: 'query',
-                            name: '33',
-                            roles: []
-                        }
-                    ]
-                },
-                {
-                    type: 'folder',
-                    name: 'noch einer',
-                    id: '12345',
-                    roleObjects: [
-                        {
-                            name: 'Rolle1',
-                            type: 'role/user',
-                            permissions: [ 'read', 'write' ]
-                        }
-                    ],
-                    repositoryObjects : [
-                        {
-                            type: 'query',
-                            name: 'bla bla',
-                            roles: []
-                        },
-                        {
-                            type: 'query',
-                            name: 'muh kuh',
-                            roles: []
-                        }
-                    ]
-                },
-                {
-                    type: 'query',
-                    name: '123',
-                    roles: []
-                }
-            ]
-        }
-        callback( mockRepositoryObjects );
     },
 
     select_root_folder: function( event ) {

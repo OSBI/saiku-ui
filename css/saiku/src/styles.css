@@ -1296,6 +1296,8 @@ background: url("../../../images/src/sort_none.png") no-repeat;
     margin-top: 5px;
     border: 1px solid #cccccc;
     width: 265px;
+    height: 200px;
+    overflow: auto;
 }
 
 .queries h3 {

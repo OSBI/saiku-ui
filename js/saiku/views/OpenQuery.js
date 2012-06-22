@@ -39,40 +39,11 @@ var OpenQuery = Backbone.View.extend({
         return _.template($("#template-open-dialog").html())();        
     },
 
-    template_repository_objects: function( queries ) {
-        /* mock */
-        console.info( queries );
-        queries = {
-            repositoryObjects : [
-                {
-                    type: 'folder',
-                    name: 'a folder',
-                    id: '12345',
-                    roleObjects: [
-                        {
-                            name: 'Rolle1',
-                            type: 'role/user',
-                            permissions: [ 'read', 'write' ]
-                        }
-                    ],
-                    repositoryObjects : [
-                        {
-                            type: 'query',
-                            name: '33',
-                            roles: []
-                        }
-                    ]
-                },
-                {
-                    type: 'query',
-                    name: '123',
-                    roles: []
-                }
-            ]
-        }
+    template_repository_objects: function( repository ) {
+        var self = this;
         $(this.el).find('.sidebar ul').html(
             _.template( $( '#template-repository-objects' ).html( ) )( {
-                repositoryObjects: queries.repositoryObjects
+                repoObjects: repository
             } ) 
         );
     },
@@ -106,16 +77,24 @@ var OpenQuery = Backbone.View.extend({
         this.repository.fetch();
     },
     
-    populate: function(response) {
+    populate: function( repository ) {
         var self = this;
-        self.template_repository_objects( response );
+        self.template_repository_objects( repository );
         self.queries = {};
-        _.forEach( response, function( query ) {
-            self.queries[ query.name ] = query; 
-        } );
+        function getQueries( entries ) {
+            _.forEach( entries, function( entry ) {
+                if( entry.type === 'FILE' ) {
+                    self.queries[ entry.name ] = entry;
+                } else {
+                    getQueries( entry.repoObjects );
+                }
+            } );
+        }
+        getQueries( repository );
     },
     
     view_query: function(event) {
+        event.preventDefault( );
         var $target = $(event.currentTarget).find('a');
         var name = $target.attr('href').replace('#', '');
         var query = this.queries[name];
@@ -192,7 +171,6 @@ var OpenQuery = Backbone.View.extend({
     },
 
     delete_query: function(event) {
-        console.info( 'here: query' );
         (new DeleteQuery({
             query: this.selected_query,
             success: this.clear_query

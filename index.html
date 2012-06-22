@@ -303,13 +303,13 @@
         </script>
 
         <script type="text/x-jquery-tmpl" id="template-repository-objects">
-            <% _.each( repositoryObjects, function( entry ) { %>
-                <% if( entry.type === 'folder' ) { %>
+            <% _.each( repoObjects, function( entry ) { %>
+                <% if( entry.type === 'FOLDER' ) { %>
                     <li class='folder'>
                         <span class='sprite folder collapsed'></span>
                         <a href='#<%= entry.name %>'><%= entry.name %></a>
                         <ul class='hide'>
-                            <% _.each( entry.repositoryObjects, function( entry ) { %>
+                            <% _.each( entry.repoObjects, function( entry ) { %>
                                 <li class='query'>
                                     <span class='sprite'></span>
                                     <a href='#<%= entry.name %>'><%= entry.name %></a>
