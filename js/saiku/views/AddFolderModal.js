@@ -56,7 +56,7 @@ var AddFolderModal = Modal.extend({
         var name = $(this.el).find('input[name="name"]').val();
         (new RepositoryObject( { file: name } ) ).save( { 
             success: this.close,
-            error: function( model, response ) { console.info( arguments ); } 
+            error: function( model, response ) { console.info( arguments );  return false; } 
         } );
         return false;
     }

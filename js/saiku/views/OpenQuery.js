@@ -84,7 +84,7 @@ var OpenQuery = Backbone.View.extend({
         function getQueries( entries ) {
             _.forEach( entries, function( entry ) {
                 if( entry.type === 'FILE' ) {
-                    self.queries[ entry.name ] = entry;
+                    self.queries[ entry.path ] = entry;
                 } else {
                     getQueries( entry.repoObjects );
                 }
@@ -96,8 +96,8 @@ var OpenQuery = Backbone.View.extend({
     view_query: function(event) {
         event.preventDefault( );
         var $target = $(event.currentTarget).find('a');
-        var name = $target.attr('href').replace('#', '');
-        var query = this.queries[name];
+        var path = $target.attr('href').replace('#', '');
+        var query = this.queries[path];
         
         $(this.el).find('.workspace_toolbar').removeClass( 'hide' );
         $( this.el ).find( '.for_folder' ).addClass( 'hide' );
@@ -115,7 +115,7 @@ var OpenQuery = Backbone.View.extend({
             }
         }
         
-        this.selected_query = new SavedQuery({ name: name });
+        this.selected_query = new SavedQuery({ file: path });
         
         return false;
     },
@@ -156,15 +156,15 @@ var OpenQuery = Backbone.View.extend({
 
     select_and_open_query: function(event) {
         $target = $(event.currentTarget).find('a');
-        var name = $target.attr('href').replace('#', '');
-        this.selected_query = new SavedQuery({ name: name });
+        var path = $target.attr('href').replace('#', '');
+        this.selected_query = new SavedQuery({ file: path });
         this.open_query();
     },
     
     open_query: function(event) {
         Saiku.ui.block("Opening query...");
         this.selected_query.fetch({ 
-            success: this.selected_query.move_query_to_workspace 
+            success: this.selected_query.move_query_to_workspace
         });
         
         return false;
