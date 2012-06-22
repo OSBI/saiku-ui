@@ -1,5 +1,5 @@
 /*
- * AddFolderModal.js
+ * DeleteQuery.js
  * 
  * Copyright (c) 2011, OSBI Ltd. All rights reserved.
  *
@@ -18,57 +18,38 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
+
 /**
- * The "add a folder" dialog
+ * The delete query confirmation dialog
  */
-var AddFolderModal = Modal.extend({
-
-    type: "save",
-    closeText: "Save",
-
-    events: {
-        'click .form_button': 'save',
-        'submit form': 'save'
-    },
-
+var DeleteRepositoryObject = Modal.extend({
+    type: "delete",
+    
     buttons: [
-        { text: "OK", method: "save" }
+        { text: "Yes", method: "del" },
+        { text: "No", method: "close" }
     ],
-
+    
     initialize: function(args) {
-        var self = this;
+        this.options.title = "Confirm deletion";
+        this.query = args.query;
         this.success = args.success;
-        this.message = "<form id='add_folder'>" +
-            "<label for='name'>To add a new forlder, " + 
-            "please type a name in the text box below:</label><br />" +
-            "<input type='text' name='name'" +
-            "</form>"
-
-        _.extend(this.options, {
-            title: "Add Folder"
-        });
+        this.message = _.template("Are you sure you want to delete <%= name %>?")
+            ({ name: this.query.get('name') });
     },
     
-    type: "save",
-
-    save: function( event ) {
-        event.preventDefault( );
-        var self = this;
-        
-        var name = $(this.el).find('input[name="name"]').val();
-        (new SavedQuery( { file: name , name: name} ) ).save( { 
-            success: self.success,
-            dataType: "text",
+    del: function() {
+        this.query.id = _.uniqueId("query_");
+        this.query.url = this.query.url() + "?file=" + this.query.get('file');
+        this.query.destroy({
+            success: this.success,
             error: this.error
-        } );
+        });
         this.close();
-        return false;
     },
-
+    
     error: function() {
         $(this.el).find('dialog_body')
-            .html("Could not add new folder");
+            .html("Could not delete repository object");
     }
-
-
 });

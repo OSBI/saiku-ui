@@ -97,6 +97,7 @@ var OpenQuery = Backbone.View.extend({
         event.preventDefault( );
         var $target = $(event.currentTarget).find('a');
         var path = $target.attr('href').replace('#', '');
+        var name = $target.text();
         var query = this.queries[path];
         
         $(this.el).find('.workspace_toolbar').removeClass( 'hide' );
@@ -115,7 +116,7 @@ var OpenQuery = Backbone.View.extend({
             }
         }
         
-        this.selected_query = new SavedQuery({ file: path });
+        this.selected_query = new SavedQuery({ file: path, name: name });
         
         return false;
     },
@@ -130,10 +131,16 @@ var OpenQuery = Backbone.View.extend({
 
         $( this.el ).find( '.workspace_results' )
             .html( '<h3><strong>' + name + '</strong></h3>' );
+
+        this.selected_query = new SavedQuery({ file: name , name: name });
+
     },
 
     add_folder: function( event ) {
-        (new AddFolderModal).render().open();
+        (new AddFolderModal({ 
+            success: this.clear_query 
+        })).render().open();
+
         return false;
     },
 
@@ -157,7 +164,8 @@ var OpenQuery = Backbone.View.extend({
     select_and_open_query: function(event) {
         $target = $(event.currentTarget).find('a');
         var path = $target.attr('href').replace('#', '');
-        this.selected_query = new SavedQuery({ file: path });
+        var name = $target.text();
+        this.selected_query = new SavedQuery({ file: path, name: path });
         this.open_query();
     },
     
@@ -173,7 +181,7 @@ var OpenQuery = Backbone.View.extend({
     },
 
     delete_query: function(event) {
-        (new DeleteQuery({
+        (new DeleteRepositoryObject({
             query: this.selected_query,
             success: this.clear_query
         })).render().open();
@@ -187,7 +195,10 @@ var OpenQuery = Backbone.View.extend({
     },
     
     delete_folder: function( event ) {
-        alert( 'todo: delete folder' );
+        (new DeleteRepositoryObject({
+            query: this.selected_query,
+            success: this.clear_query
+        })).render().open();
         return false;
     },
 

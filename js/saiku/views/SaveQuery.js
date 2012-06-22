@@ -130,9 +130,9 @@ var SaveQuery = Modal.extend({
     copy_to_repository: function(model, response) {
         var folder = this.query.get('folder');
         var file = this.query.get('name').indexOf(".saiku") == this.query.get('name').length - 6 ? this.query.get('name') : this.query.get('name') + ".saiku";
-        var file = folder + file;
+        file = folder + file;
         (new SavedQuery({
-
+            name: this.query.get('name'),
             file: file,
             content: response.xml
         })).save({ success: this.close });
