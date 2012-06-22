@@ -40,9 +40,11 @@ var DeleteQuery = Modal.extend({
     
     del: function() {
         this.query.id = _.uniqueId("query_");
+        this.query.url = this.query.url() + "?file=" + this.query.get('file');
+        console.log("file: " + this.query.get('file'));
         this.query.destroy({
             success: this.success,
-            error: this.error
+            error: alert('error')
         });
         this.close();
     },

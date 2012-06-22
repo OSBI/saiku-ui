@@ -114,7 +114,6 @@ var SaveQuery = Modal.extend({
             foldername = (foldername != null && foldername.length > 0 ? foldername + "/" : "");
         }
         var name = $(this.el).find('input[name="name"]').val();
-        console.log("foldername: " + foldername);
         this.query.set({ name: name, folder: foldername });
         this.query.trigger('query:save');
         $(this.el).find('form').html("Saving query...");
@@ -131,7 +130,6 @@ var SaveQuery = Modal.extend({
     copy_to_repository: function(model, response) {
         var folder = this.query.get('folder');
         var file = this.query.get('name').indexOf(".saiku") == this.query.get('name').length - 6 ? this.query.get('name') : this.query.get('name') + ".saiku";
-        console.log("folder: " + folder + " file: " + file);
         var file = folder + file;
         (new SavedQuery({
 

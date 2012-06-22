@@ -31,8 +31,10 @@ var RepositoryObject = Backbone.Model.extend( {
 } );
 
 var SavedQuery = Backbone.Model.extend({
-    parse: function(response, XHR) {
-        this.xml = response.xml;
+
+    parse: function(response) {
+        //console.log("response: " + response);
+        //this.xml = response;
     },
     
     url: function() {
@@ -44,9 +46,9 @@ var SavedQuery = Backbone.Model.extend({
     
     move_query_to_workspace: function(model, response) {
         var query = new Query({ 
-            xml: model.xml
+            xml: response
         }, {
-            name: model.get('name')
+            name: model.get('file')
         });
         
         var tab = Saiku.tabs.add(new Workspace({ query: query }));
