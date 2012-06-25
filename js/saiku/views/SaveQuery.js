@@ -96,7 +96,7 @@ var SaveQuery = Modal.extend({
         var $currentTarget = $( event.currentTarget );
         this.unselect_current_selected_folder( );
         $currentTarget.parent( ).parent( ).has( '.folder' ).addClass( 'selected' );
-        var name = $currentTarget.find( 'a' ).attr( 'href' ).replace( '#', '' );
+        var name = $currentTarget.find( 'a' ).text();
         $(this.el).find('input[name="name"]').val( name );
         return false;
     },
@@ -111,9 +111,10 @@ var SaveQuery = Modal.extend({
         var $folder = $(this.el).find( 'li.folder.selected a' ).first( );
         if( $folder.length ) {
             foldername = $folder.attr( 'href' ).replace( '#', '' );
+            foldername = (foldername != null && foldername.length > 0 ? foldername + "/" : "");
         }
         var name = $(this.el).find('input[name="name"]').val();
-        this.query.set({ name: name, foder: foldername });
+        this.query.set({ name: name, folder: foldername });
         this.query.trigger('query:save');
         $(this.el).find('form').html("Saving query...");
         
@@ -127,10 +128,13 @@ var SaveQuery = Modal.extend({
     },
     
     copy_to_repository: function(model, response) {
+        var folder = this.query.get('folder');
+        var file = this.query.get('name').indexOf(".saiku") == this.query.get('name').length - 6 ? this.query.get('name') : this.query.get('name') + ".saiku";
+        file = folder + file;
         (new SavedQuery({
-            name: this.query.uuid,
-            newname: this.query.get('name'),
-            xml: response.xml
+            name: this.query.get('name'),
+            file: file,
+            content: response.xml
         })).save({ success: this.close });
     }
 });

@@ -84,7 +84,7 @@ var OpenQuery = Backbone.View.extend({
         function getQueries( entries ) {
             _.forEach( entries, function( entry ) {
                 if( entry.type === 'FILE' ) {
-                    self.queries[ entry.name ] = entry;
+                    self.queries[ entry.path ] = entry;
                 } else {
                     getQueries( entry.repoObjects );
                 }
@@ -96,8 +96,9 @@ var OpenQuery = Backbone.View.extend({
     view_query: function(event) {
         event.preventDefault( );
         var $target = $(event.currentTarget).find('a');
-        var name = $target.attr('href').replace('#', '');
-        var query = this.queries[name];
+        var path = $target.attr('href').replace('#', '');
+        var name = $target.text();
+        var query = this.queries[path];
         
         $(this.el).find('.workspace_toolbar').removeClass( 'hide' );
         $( this.el ).find( '.for_folder' ).addClass( 'hide' );
@@ -115,7 +116,7 @@ var OpenQuery = Backbone.View.extend({
             }
         }
         
-        this.selected_query = new SavedQuery({ name: name });
+        this.selected_query = new SavedQuery({ file: path, name: name });
         
         return false;
     },
@@ -130,10 +131,16 @@ var OpenQuery = Backbone.View.extend({
 
         $( this.el ).find( '.workspace_results' )
             .html( '<h3><strong>' + name + '</strong></h3>' );
+
+        this.selected_query = new SavedQuery({ file: name , name: name });
+
     },
 
     add_folder: function( event ) {
-        (new AddFolderModal).render().open();
+        (new AddFolderModal({ 
+            success: this.clear_query 
+        })).render().open();
+
         return false;
     },
 
@@ -156,22 +163,25 @@ var OpenQuery = Backbone.View.extend({
 
     select_and_open_query: function(event) {
         $target = $(event.currentTarget).find('a');
-        var name = $target.attr('href').replace('#', '');
-        this.selected_query = new SavedQuery({ name: name });
+        var path = $target.attr('href').replace('#', '');
+        var name = $target.text();
+        this.selected_query = new SavedQuery({ file: path, name: path });
         this.open_query();
     },
     
     open_query: function(event) {
         Saiku.ui.block("Opening query...");
         this.selected_query.fetch({ 
-            success: this.selected_query.move_query_to_workspace 
+            success: this.selected_query.move_query_to_workspace,
+            error: function() { Saiku.ui.unblock(); },
+            dataType: "text"
         });
         
         return false;
     },
 
     delete_query: function(event) {
-        (new DeleteQuery({
+        (new DeleteRepositoryObject({
             query: this.selected_query,
             success: this.clear_query
         })).render().open();
@@ -185,7 +195,10 @@ var OpenQuery = Backbone.View.extend({
     },
     
     delete_folder: function( event ) {
-        alert( 'todo: delete folder' );
+        (new DeleteRepositoryObject({
+            query: this.selected_query,
+            success: this.clear_query
+        })).render().open();
         return false;
     },
 

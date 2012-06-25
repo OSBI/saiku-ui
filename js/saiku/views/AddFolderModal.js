@@ -35,9 +35,9 @@ var AddFolderModal = Modal.extend({
         { text: "OK", method: "save" }
     ],
 
-    initialize: function() {
+    initialize: function(args) {
         var self = this;
-
+        this.success = args.success;
         this.message = "<form id='add_folder'>" +
             "<label for='name'>To add a new forlder, " + 
             "please type a name in the text box below:</label><br />" +
@@ -53,12 +53,22 @@ var AddFolderModal = Modal.extend({
 
     save: function( event ) {
         event.preventDefault( );
+        var self = this;
+        
         var name = $(this.el).find('input[name="name"]').val();
-        (new RepositoryObject( { file: name } ) ).save( { 
-            success: this.close,
-            error: function( model, response ) { console.info( arguments ); } 
+        (new SavedQuery( { file: name , name: name} ) ).save( { 
+            success: self.success,
+            dataType: "text",
+            error: this.error
         } );
+        this.close();
         return false;
+    },
+
+    error: function() {
+        $(this.el).find('dialog_body')
+            .html("Could not add new folder");
     }
+
 
 });

@@ -22,7 +22,7 @@
 /**
  * The delete query confirmation dialog
  */
-var DeleteQuery = Modal.extend({
+var DeleteRepositoryObject = Modal.extend({
     type: "delete",
     
     buttons: [
@@ -40,6 +40,7 @@ var DeleteQuery = Modal.extend({
     
     del: function() {
         this.query.id = _.uniqueId("query_");
+        this.query.url = this.query.url() + "?file=" + this.query.get('file');
         this.query.destroy({
             success: this.success,
             error: this.error
@@ -49,6 +50,6 @@ var DeleteQuery = Modal.extend({
     
     error: function() {
         $(this.el).find('dialog_body')
-            .html("Could not delete query");
+            .html("Could not delete repository object");
     }
 });

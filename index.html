@@ -74,7 +74,7 @@
         <script type="text/javascript" src="js/saiku/views/WorkspaceDropZone.js"></script>
         <script type="text/javascript" src="js/saiku/views/Table.js"></script>
         <script type="text/javascript" src="js/saiku/views/Workspace.js"></script>
-        <script type="text/javascript" src="js/saiku/views/DeleteQuery.js"></script>
+        <script type="text/javascript" src="js/saiku/views/DeleteRepositoryObject.js"></script>
         <script type="text/javascript" src="js/saiku/views/OpenQuery.js"></script>
         <script type="text/javascript" src="js/saiku/views/SaveQuery.js"></script>
         <script type="text/javascript" src="js/saiku/views/Tab.js"></script>
@@ -305,25 +305,29 @@
         <script type="text/x-jquery-tmpl" id="template-repository-objects">
             <% _.each( repoObjects, function( entry ) { %>
                 <% if( entry.type === 'FOLDER' ) { %>
-                    <li class='folder'>
-                        <span class='sprite folder collapsed'></span>
-                        <a href='#<%= entry.name %>'><%= entry.name %></a>
-                        <ul class='hide'>
-                            <% _.each( entry.repoObjects, function( entry ) { %>
-                                <li class='query'>
-                                    <span class='sprite'></span>
-                                    <a href='#<%= entry.name %>'><%= entry.name %></a>
-                                </li>
-                            <% } ); %>
-                        </ul>
-                    </li>
+                   <%= _.template($("#template-repository-folder").html())({ entry: entry }) %>
                 <% } else { %>
-                    <li class='query'>
-                        <span class='sprite'></span>
-                        <a href='#<%= entry.name %>'><%= entry.name %></a>
-                    </li>
+                    <%= _.template($("#template-repository-file").html())({ entry: entry }) %>
                 <% } %>
             <% } ); %>
+        </script>
+        <script type="text/x-jquery-tmpl" id="template-repository-folder">
+             <li class='folder'>
+                <span class='sprite folder collapsed'></span>
+                <a href='#<%= entry.path %>'><%= entry.name %></a>
+                <ul class='hide'>
+                
+                <%= _.template($("#template-repository-objects").html())( { repoObjects: entry.repoObjects }) %>
+
+                </ul>
+            </li>
+        </script>
+
+        <script type="text/x-jquery-tmpl" id="template-repository-file">
+            <li class='query'>
+                <span class='sprite'></span>
+                <a href='#<%= entry.path %>'><%= entry.name %></a>
+            </li>
         </script>
 
         <script type="text/x-jquery-tmpl" id="template-selections">
