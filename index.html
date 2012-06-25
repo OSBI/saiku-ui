@@ -312,12 +312,15 @@
             <% } ); %>
         </script>
         <script type="text/x-jquery-tmpl" id="template-repository-folder">
-             <li class='folder'>
-                <span class='sprite folder collapsed'></span>
-                <a href='#<%= entry.path %>'><%= entry.name %></a>
+            <li class='folder'>
+                <div class='folder_row'>
+                    <span class='sprite folder collapsed'></span>
+                    <a href='#<%= entry.path %>'><%= entry.name %></a>
+                </div>
+
                 <ul class='hide'>
-                
-                <%= _.template($("#template-repository-objects").html())( { repoObjects: entry.repoObjects }) %>
+
+                    <%= _.template($("#template-repository-objects").html())( { repoObjects: entry.repoObjects }) %>
 
                 </ul>
             </li>
