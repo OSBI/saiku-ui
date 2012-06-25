@@ -1267,6 +1267,10 @@ background: url("../../../images/src/sort_none.png") no-repeat;
     background: #f0f0f0;
 }
 
+.RepositoryObjects ul.folder_content {
+    margin-top: 5px;
+}
+
 .RepositoryObjects li.selected.folder .folder_row {
     background: #f0f0f0;
 }
