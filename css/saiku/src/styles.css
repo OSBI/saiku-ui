@@ -1267,7 +1267,7 @@ background: url("../../../images/src/sort_none.png") no-repeat;
     background: #f0f0f0;
 }
 
-.RepositoryObjects li.folder.selected {
+.RepositoryObjects li.selected {
     background: #f0f0f0;
 }
 

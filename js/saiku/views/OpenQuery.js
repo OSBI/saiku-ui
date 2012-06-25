@@ -95,7 +95,10 @@ var OpenQuery = Backbone.View.extend({
     
     view_query: function(event) {
         event.preventDefault( );
-        var $target = $(event.currentTarget).find('a');
+        var $currentTarget = $( event.currentTarget );
+        var $target = $currentTarget.find('a');
+        this.unselect_current_selected( );
+        $currentTarget.addClass( 'selected' );
         var path = $target.attr('href').replace('#', '');
         var name = $target.text();
         var query = this.queries[path];
@@ -146,6 +149,8 @@ var OpenQuery = Backbone.View.extend({
 
     toggle_folder: function( event ) {
         var $target = $( event.currentTarget );
+        this.unselect_current_selected( );
+        $target.addClass( 'selected' );
         var $queries = $target.find( 'ul' );
         var isClosed = $queries.hasClass( 'hide' );
         if( isClosed ) {
@@ -162,7 +167,7 @@ var OpenQuery = Backbone.View.extend({
     },
 
     select_and_open_query: function(event) {
-        $target = $(event.currentTarget).find('a');
+        var $target = $(event.currentTarget).find('a');
         var path = $target.attr('href').replace('#', '');
         var name = $target.text();
         this.selected_query = new SavedQuery({ file: path, name: path });
@@ -229,5 +234,10 @@ var OpenQuery = Backbone.View.extend({
         var new_margin = $(this.el).find('.sidebar').hasClass('hide') ?
                 5 : 265;
         $(this.el).find('.workspace_inner').css({ 'margin-left': new_margin });
+    },
+
+    unselect_current_selected: function( ) {
+        $( this.el ).find( 'li.selected' ).removeClass( 'selected' );
     }
+
 });
