@@ -57,6 +57,9 @@ var SaveQuery = Modal.extend({
         this.repository = new Repository({}, { dialog: this });
 
         this.bind( 'open', function( ) {
+            $(this.el).find('.RepositoryObjects').height(($("body").height() / 2) + ($("body").height() / 6) );
+            $(this.el).dialog( 'option', 'position', 'center' );
+            $(this.el).parents('.ui-dialog').css({ width: "500px" });
             self.repository.fetch( );
         } );
 
