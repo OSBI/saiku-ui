@@ -58,7 +58,12 @@ var SaveQuery = Modal.extend({
         this.repository = new Repository({}, { dialog: this });
 
         this.bind( 'open', function( ) {
-            $(this.el).find('.RepositoryObjects').height(($("body").height() / 2) + ($("body").height() / 6) );
+            var height = ( $( "body" ).height() / 2 ) + ( $( "body" ).height() / 6 );
+            if( height > 420 ) {
+                height = 420;
+            }
+            console.info( height );
+            $(this.el).find('.RepositoryObjects').height( height );
             $(this.el).dialog( 'option', 'position', 'center' );
             $(this.el).parents('.ui-dialog').css({ width: "500px" });
             self.repository.fetch( );
