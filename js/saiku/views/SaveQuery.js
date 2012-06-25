@@ -73,7 +73,10 @@ var SaveQuery = Modal.extend({
     },
 
     select_root_folder: function( event ) {
-        this.unselect_current_selected_folder( );
+        var isNameInputField = $( event.target ).attr( 'name' ) === 'name';
+        if( !isNameInputField ) {
+            this.unselect_current_selected_folder( );
+        }
     },
 
     toggle_folder: function( event ) {
