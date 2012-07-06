@@ -31,6 +31,7 @@ var QueryRouter = Backbone.Router.extend({
         Settings.ACTION = "OPEN_QUERY";
         var options = { 
             name: query_name,
+            file: query_name,
             solution: Settings.GET.SOLUTION || "",
             path: Settings.GET.PATH || "",
             action: Settings.GET.ACTION || "",

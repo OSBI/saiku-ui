@@ -99,6 +99,15 @@
         <script type="text/javascript" src="js/saiku/plugins/Buckets/plugin.js" defer></script>
         
         <!-- Templates -->
+        <script type="text/x-jquery-tmpl" id="template-connections">
+            <select class="connections">
+                <option value="" class="i18n">Select a connection</option>
+                <% _.each(connections, function(connection) { %>
+                    <option value="<%= connection.name %>"><%= connection.name %></option>
+                <% }); %>
+            </select>
+        </script>
+
         <script type="text/x-jquery-tmpl" id="template-cubes">
             <select class="cubes">
                 <option value="" class="i18n">Select a cube</option>
@@ -186,7 +195,8 @@
                 </div>
             </div>
             <div class="sidebar_inner">
-                <%= cube_navigation %>
+                <%= connections_navigation %>
+                <div class="cubenav"><%= cube_navigation %></div>
             </div>
             <h3 class="i18n">Dimensions</h3>
             <div class="sidebar_inner dimension_tree"></div>

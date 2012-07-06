@@ -28,13 +28,14 @@ var Workspace = Backbone.View.extend({
         'click .sidebar_separator': 'toggle_sidebar',
         'change .cubes': 'new_query',
         'drop': 'remove_dimension',
-        'click .refresh_cubes' : 'refresh'
+        'click .refresh_cubes' : 'refresh',
+        'change .connections' : 'select_connection'
     },
     
     initialize: function(args) {
         // Maintain `this` in jQuery event handlers
         _.bindAll(this, "adjust", "toggle_sidebar", "prepare", "new_query", 
-                "init_query", "update_caption", "populate_selections","refresh");
+                "init_query", "update_caption", "populate_selections","refresh", "render_cubenav");
                 
         // Attach an event bus to the workspace
         _.extend(this, Backbone.Events);
@@ -60,6 +61,8 @@ var Workspace = Backbone.View.extend({
         }
         // Flash cube navigation when rendered
         Saiku.session.bind('tab:add', this.prepare);
+        Saiku.events.bind('connections:loaded', this.render_cubenav);
+
     },
     
     caption: function() {
@@ -73,12 +76,49 @@ var Workspace = Backbone.View.extend({
     template: function() {
         var template = $("#template-workspace").html() || "";
         return _.template(template)({
-            cube_navigation: Saiku.session.sessionworkspace.cube_navigation
+            cube_navigation: Saiku.session.sessionworkspace.cube_navigation,
+            connections_navigation: Saiku.session.sessionworkspace.connections_navigation
         });        
     },
 
+    select_connection: function() {
+        this.connection = $(this.el).find('.connections').val();
+        if (this.connection.length > 0) {
+            Saiku.session.sessionworkspace.connection = this.connection;
+            var c = Saiku.session.sessionworkspace.cubes[this.connection];
+            if (typeof c != "undefined" && c != null) {
+                this.render_cubenav(c);
+            } else {
+                Saiku.session.sessionworkspace.fetch({success:Saiku.session.sessionworkspace.process_datasources},{});    
+            }
+        } else {
+            $(this.el).find(".cubenav").html("");
+            this.selected_cube = null;
+            this.clear();
+
+        }
+    },
+
     refresh: function() {
-        Saiku.session.sessionworkspace.refresh();
+        this.connection = $(this.el).find('.connections').val();
+        Saiku.session.sessionworkspace.connection = this.connection;
+        Saiku.session.sessionworkspace.fetch({success:Saiku.session.sessionworkspace.process_datasources},{});
+        $(this.el).find(".cubenav").html("");
+        this.clear();
+    },
+
+    render_cubenav: function(connections) {
+        var self = this;
+        _.each(connections, function(connection) {
+            if( connection.name == self.connection) {
+                var cube_navigation = _.template($("#template-cubes").html())({
+                    connections: connections
+                });
+                $(self.el).find(".cubenav").html(cube_navigation);
+                this.selected_cube = null;
+                self.clear();
+            }
+        });
     },
     
     render: function() {
@@ -116,9 +156,30 @@ var Workspace = Backbone.View.extend({
         // Prepare the workspace for a new query
         $(this.el).find('.workspace_results table,.connectable')
             .html('');
-            
+        
         // Trigger clear event
         Saiku.session.trigger('workspace:clear', { workspace: this });
+
+        if (this.selected_cube) {
+            // Create new DimensionList and MeasureList
+            this.dimension_list = new DimensionList({
+                workspace: this,
+                dimension: Saiku.session.sessionworkspace.dimensions[this.selected_cube]
+            });        
+            $(this.el).find('.dimension_tree').html('').append($(this.dimension_list.el));
+            
+            this.measure_list = new DimensionList({
+                workspace: this,
+                dimension: Saiku.session.sessionworkspace.measures[this.selected_cube]
+            });
+            $(this.el).find('.measure_tree').html('').append($(this.measure_list.el));
+        } else {
+            // Someone literally selected "Select a cube"
+            $(this.el).find('.dimension_tree').html('');
+            $(this.el).find('.measure_tree').html('');
+            return;
+        }
+
 
     },
     
@@ -169,6 +230,13 @@ var Workspace = Backbone.View.extend({
         
         // Initialize the new query
         this.selected_cube = $(this.el).find('.cubes').val();
+
+        if(this.selected_cube.length == 0) {
+            this.clear();
+            return false;
+        }
+
+
         var parsed_cube = this.selected_cube.split('/');
         var cube = parsed_cube[3];
         for (var i = 4; i < parsed_cube.length; i++) {
@@ -226,6 +294,8 @@ var Workspace = Backbone.View.extend({
         // Find the selected cube
         if (this.selected_cube === undefined) {
             var schema = this.query.get('schema');
+            $(this.el).find('.connections')
+                .val(this.query.get('connection'));
             this.selected_cube = this.query.get('connection') + "/" + 
                 this.query.get('catalog') + "/"
                 + ((schema == "" || schema == null) ? "null" : schema) 
@@ -235,27 +305,6 @@ var Workspace = Backbone.View.extend({
         }        
         // Clear workspace
         this.clear();
-        
-        if (this.selected_cube) {
-            // Create new DimensionList and MeasureList
-            this.dimension_list = new DimensionList({
-                workspace: this,
-                dimension: Saiku.session.sessionworkspace.dimensions[this.selected_cube]
-            });        
-            $(this.el).find('.dimension_tree').html('').append($(this.dimension_list.el));
-            
-            this.measure_list = new DimensionList({
-                workspace: this,
-                dimension: Saiku.session.sessionworkspace.measures[this.selected_cube]
-            });
-            $(this.el).find('.measure_tree').html('').append($(this.measure_list.el));
-        } else {
-            // Someone literally selected "Select a cube"
-            $(this.el).find('.dimension_tree').html('');
-            $(this.el).find('.measure_tree').html('');
-            return;
-        }
-
     },
 
     populate_selections: function(dimension_el) {

@@ -26,11 +26,13 @@
  * @returns {Session}
  */
 var SessionWorkspace = Backbone.Model.extend({
+
+    cubes : {},
         
     initialize: function(args, options) {
         // Attach a custom event bus to this model
         _.extend(this, Backbone.Events);
-        _.bindAll(this, "process_datasources", "prefetch_dimensions");
+        _.bindAll(this, "process_datasources", "prefetch_dimensions", "load_workspace", "process_connections");
         this.initialized = false;
         this.first = true;
         // Check expiration on localStorage
@@ -38,13 +40,35 @@ var SessionWorkspace = Backbone.Model.extend({
             localStorage.clear();
         }
         Saiku.ui.block("Loading datasources....");
-        this.fetch({success:this.process_datasources},{});
+
+        if(Settings.LAZY_LOADING_CUBES) {
+             if (false && localStorage && localStorage.getItem('saiku.connections') !== null) {
+                _.delay(this.process_connections(null, JSON.parse(localStorage.getItem('saiku.connections'))), 200);
+            } else {
+                this.ds = new SaikuConnections();
+                this.ds.fetch({success:this.process_connections},{});
+            }
+        } else {
+            this.fetch({success:this.process_datasources},{});
+        }
         
     },
 
-    refresh: function() {
+    process_connections: function(model, response) {
+        this.connections_navigation =  _.template($("#template-connections").html())({
+            connections: response
+        });
+        this.connections = response;
+        if (localStorage && localStorage.getItem('saiku.connections') === null) {
+            localStorage.setItem('saiku.connections', JSON.stringify(response));
+        }
+        this.load_workspace();
+    },
+
+    refresh: function(connection) {
         localStorage.clear();
         this.clear();
+        this.connection = connection;
         this.fetch({success:this.process_datasources},{});
     },
         
@@ -55,22 +79,26 @@ var SessionWorkspace = Backbone.Model.extend({
     
     process_datasources: function(model, response) {
         // Save session in localStorage for other tabs to use
-        if (localStorage && localStorage.getItem('session') === null) {
-            localStorage.setItem('session', JSON.stringify(response));
-        }
-
-        // Generate cube navigation for reuse
-        this.cube_navigation = _.template($("#template-cubes").html())({
-            connections: response
-        });
-        
-        
+        if (localStorage) {
+            localStorage.setItem('saiku.cubes' + this.connection, JSON.stringify(response));
+        } 
+        Saiku.events.trigger('connections:loaded', response);
+        this.cubes[this.connection] = response;
         // Create cube objects
         this.dimensions = {};
         this.measures = {};
-        this.connections = response;
         _.delay(this.prefetch_dimensions, 200);
+        if(!Settings.LAZY_LOADING_CUBES) {
+            // Generate cube navigation for reuse
+            this.cube_navigation = _.template($("#template-cubes").html())({
+                connections: response
+            });
+            this.load_workspace();
+        }
         
+    },
+
+    load_workspace: function() {
         if (!this.initialized) {
             // Show UI
             $(Saiku.toolbar.el).prependTo($("#header"));
@@ -102,8 +130,8 @@ var SessionWorkspace = Backbone.Model.extend({
             return;
         }
         
-        for(var i = 0; i < this.connections.length; i++) {
-            var connection = this.connections[i];
+        for(var i = 0; i < this.cubes[this.connection].length; i++) {
+            var connection = this.cubes[this.connection][i];
             for(var j = 0; j < connection.catalogs.length; j++) {
                 var catalog = connection.catalogs[j];
                 for(var k = 0; k < catalog.schemas.length; k++) {
@@ -140,12 +168,20 @@ var SessionWorkspace = Backbone.Model.extend({
     },
     
     url: function() {
+        var con = (typeof this.connection != "undefined" && this.connection != null && this.connection.length > 0) ? "/" + this.connection : "";
         if (this.first) {
             this.first = false;
-            return encodeURI(Saiku.session.username + "/discover/");
+            return encodeURI(Saiku.session.username + "/discover" + con);
         }
         else {
-            return encodeURI(Saiku.session.username + "/discover/refresh");
+            return encodeURI(Saiku.session.username + "/discover" + con + "/refresh");
         }
+    }
+});
+
+var SaikuConnections = Backbone.Model.extend({
+        
+    url: function() {
+        return encodeURI(Saiku.session.username + "/datasources/");
     }
 });
