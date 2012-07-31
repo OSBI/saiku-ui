@@ -36,7 +36,7 @@ var SessionWorkspace = Backbone.Model.extend({
         this.initialized = false;
         this.first = true;
         // Check expiration on localStorage
-        if (localStorage && localStorage.getItem('expiration') && !(localStorage.getItem('expiration') > (new Date()).getTime())) {
+        if (typeof localStorage !== "undefined" && localStorage && localStorage.getItem('expiration') && !(localStorage.getItem('expiration') > (new Date()).getTime())) {
             localStorage.clear();
         }
         Saiku.ui.block("Loading datasources....");
@@ -73,7 +73,7 @@ var SessionWorkspace = Backbone.Model.extend({
     },
         
     destroy: function() {
-        localStorage && localStorage.clear();
+        typeof localStorage !== "undefined" && localStorage && localStorage.clear();
         return false;
     },
     
@@ -142,7 +142,7 @@ var SessionWorkspace = Backbone.Model.extend({
                             + ((schema.name == "" || schema.name == null) ? "null" : schema.name) 
                             + "/" + encodeURIComponent(cube.name);
 
-                        if (localStorage && 
+                        if (typeof localStorage !== "undefined" && localStorage && 
                             localStorage.getItem("dimension." + key) !== null &&
                             localStorage.getItem("measure." + key) !== null) {
                             this.dimensions[key] = new Dimension(JSON.parse(localStorage.getItem("dimension." + key)));

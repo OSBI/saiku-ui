@@ -29,16 +29,23 @@ var QueryRouter = Backbone.Router.extend({
     
     open_query: function(query_name) {
         Settings.ACTION = "OPEN_QUERY";
-        var options = { 
-            name: query_name,
-            file: query_name,
-            solution: Settings.GET.SOLUTION || "",
-            path: Settings.GET.PATH || "",
-            action: Settings.GET.ACTION || "",
-            biplugin: true
-        };
+        var options = {};
+        var dataType = "text";
+        if (Settings.BIPLUGIN) {
+            var file = (Settings.GET.SOLUTION ? (Settings.GET.SOLUTION + "/") : "")
+                        + (Settings.GET.PATH ? (Settings.GET.PATH + "/") : "")
+                        + (Settings.GET.ACTION || "");
+            options = {
+                file: file
+            };
+        } else {
+            
+            options = {
+                file: query_name
+            }
+        }
         var query = new SavedQuery(options);
-        query.fetch({ success: query.move_query_to_workspace });
+        query.fetch({ success: query.move_query_to_workspace, dataType: dataType});
     },
 
     open_query_repository: function( ) {

@@ -73,7 +73,7 @@ var WorkspaceDropZone = Backbone.View.extend({
     },
 
     sort_measure: function(event, ui) {
-        $axis = $(event.target.parentElement).parents('.fields_list_body');
+        $axis = $(event.target).parent().parents('.fields_list_body');
         var source = "";
         var target = "ROWS";
         
@@ -86,7 +86,7 @@ var WorkspaceDropZone = Backbone.View.extend({
         if ($(event.target).hasClass('BASC')) sortOrder = "BASC";
         if ($(event.target).hasClass('BDESC')) sortOrder = "BDESC";
 
-        var memberpath = $(event.target.parentElement).find('a').attr('href').replace('#', '').split('/');
+        var memberpath = $(event.target).parent().find('a').attr('href').replace('#', '').split('/');
         var member = "-";
         if ($(event.target).parent().hasClass('d_dimension')) {
             member = memberpath[2] + ".CurrentMember.Name";
@@ -152,7 +152,7 @@ var WorkspaceDropZone = Backbone.View.extend({
         
 
         // Wrap with the appropriate parent element
-        if (ui.item.find('a').hasClass('dimension')) {
+        if (ui.item.find('a').hasClass('level')) {
             var $icon = $("<div />").addClass('sprite').addClass('selections');
             var $icon2 = $("<span />").addClass('sprite').addClass('sort none');
         
@@ -185,6 +185,12 @@ var WorkspaceDropZone = Backbone.View.extend({
         // Notify the model of the change
         this.workspace.query.move_dimension(member, 
                 target, index);
+
+        if ("FILTER" == target) {
+            var ev = { target : $axis.find('a[href="#' + member + '"]') };
+            this.selections(ev, ui);
+
+        }
 
         // Prevent workspace from getting this event
         return true;
@@ -344,7 +350,7 @@ var WorkspaceDropZone = Backbone.View.extend({
     selections: function(event, ui) {
         // Determine dimension
         var $target = $(event.target).hasClass('sprite') ?
-            $(event.target).parent().find('.dimension') :
+            $(event.target).parent().find('.level') :
             $(event.target);
         var key = $target.attr('href').replace('#', '');
         
