@@ -391,14 +391,16 @@ html, body {
     padding-left: 18px;
 }
 .dimension_tree ul li ul li a {
-    /* cursor: move; */
+    /* cursor: move; 
     padding-left: 20px;
     background: url('../../../images/src/bullet_blue.png') 0px -2px no-repeat;
+    */
 }
 .measure_tree ul li ul li a {
-    /* cursor: move; */
+    /* cursor: move; 
     padding-left: 20px;
     background: url('../../../images/src/bullet_red.png') 0px -2px no-repeat;
+    */
 }
 .dimension_tree .hierarchy {
     padding-left: 1px;
@@ -413,24 +415,7 @@ html, body {
     margin: 0;
     padding: 5px 10px 6px;
 }
-.dimension_tree ul li ul li a {
-    /* cursor: move; */
-    padding-left: 20px;
-    background: url('../../../images/src/bullet_blue.png') 0px -1px no-repeat;
-}
-.measure_tree ul li ul li a {
-    /* cursor: move; */
-    padding-left: 20px;
-    background: url('../../../images/src/bullet_red.png') 0px -1px no-repeat;
-}
-.dimension_tree .hierarchy {
-    padding-left: 1px;
-}
-.dimension_tree .hierarchy a {
-    cursor: default;
-    background: url('../../../images/src/bullet_green.png') 0px -1px no-repeat;
-}
-}
+
 
 /** Tab Panel */
 
@@ -457,26 +442,29 @@ html, body {
 /** Field List */
 
 .workspace_fields {
-    overflow: hidden;
-    padding: 0 10px 0 10px;
+    overflow: auto;
+    padding: 10px;
+    margin-right: 20px;
+    width: 220px;
+    float:left;
+
 }
 .fields_list {
-    border: 1px solid #CCC;
+    float: left;
     margin-bottom: 10px;
     -moz-border-radius: 3px;
     -webkit-border-radius: 3px;
 }
 .fields_list .fields_list_header {
-    background: #F9F9F9;
-    background: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#F0F0F0));
-    background: -moz-linear-gradient(top, #FFFFFF 0%, #F0F0F0 100%);
-    border-right: 1px solid #CCC;
+    background: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#E5E5E5));
+    background: -moz-linear-gradient(top, #FFFFFF 0%, #E5E5E5 100%);
+    border: 1px solid #CCC;
     float: left;
     font-weight: bold;
     padding: 2px 5px 3px 5px;
     line-height: 23px;
     text-shadow: 1px 1px 0 #FFFFFF;
-    width: 62px;
+    width: 200px;
 }
 .fields_list .limit {
     cursor: pointer;
@@ -509,7 +497,7 @@ background: url("../../../images/src/context_down.png") no-repeat;
 .fields_list .fields_list_body {
     float: left;
     padding:  0;
-    width: 87%;
+    width: 200px;
 }
 .fields_list .fields_list_body a {
     /* cursor: move; */
@@ -521,25 +509,26 @@ background: url("../../../images/src/context_down.png") no-repeat;
 }
 .fields_list .fields_list_body ul {
     height: 22px;
-    display: inline;
-    float: left;
+    display: block;
     line-height: 22px;
     list-style: none;
     margin: 0 10px;
     padding: 3px;
-    width: 100%;
+    min-width: 90%;
+    min-height: 20px;
 }
 .fields_list .fields_list_body ul li {
     float: left;
     line-height: 16px;
     list-style-type: none;
     height: 16px;
-    display: inline;
+    display: block;
     margin: 3px 5px 0 0;
-    padding: 0 6px;
-    min-width: 70px;
-    text-align: center;
+    padding: 3px 6px;
+    width: 170px;
+    text-align: left;
     white-space:nowrap;
+    cursor: pointer;
 }
 .fields_list .fields_list_body ul li ul {
     float: right;
@@ -571,10 +560,10 @@ background: url("../../../images/src/context_down.png") no-repeat;
     height: 15px !important;
     line-height: 15px !important;
     list-style-type: none !important;
-    margin: 0 !important;
-    min-width: 70px;
-    padding: 0 6px !important;
-    text-align: center;
+    margin: 3px 5px 0 0;
+    padding: 3px 6px;
+    width: 170px;
+    text-align: left;
     -moz-box-shadow: 0 0 2px #DDD;
     -moz-border-radius: 3px;
     -webkit-box-shadow: 0 0 2px #DDD;
@@ -586,9 +575,6 @@ background: url("../../../images/src/context_down.png") no-repeat;
     padding: 0 !important;
 }
 .dimension_tree ul .ui-draggable-dragging {
-    background: #e5f6ff !important;
-    background: -webkit-gradient(linear, left top, left bottom, from(#e0e9ef), to(#c2d5e2)) !important;
-    background: -moz-linear-gradient(top, #e0e9ef 0%, #c2d5e2 100%) !important;
     border: 1px solid #2a6085 !important;
     color: #2a6085 !important;
     text-align: center;
@@ -608,13 +594,11 @@ background: url("../../../images/src/context_down.png") no-repeat;
     color: #983030 !important;
 }
 .d_dimension {
-    background: #e5f6ff;
-    background: -webkit-gradient(linear, left top, left bottom, from(#e0e9ef), to(#c2d5e2));
-    background: -moz-linear-gradient(top, #e0e9ef 0%, #c2d5e2 100%);
-    border: 1px solid #2a6085;
-    color: #2a6085;
+    background: #F9F9F9;
+    border: 1px solid #D5D5D5;
+    color: black;
     display: inline !important;
-    margin-left: 10px;
+    font-weight: bold;
     -moz-box-shadow: 0 0 2px #DDD;
     -moz-border-radius: 3px;
     -webkit-box-shadow: 0 0 2px #DDD;
@@ -628,15 +612,16 @@ background: url("../../../images/src/context_down.png") no-repeat;
     cursor: pointer;
 }
 .d_dimension a {
-    color: #2a6085;
+    color: black;
     text-decoration: none;
 }
 .d_measure {
-    background: #ffe8e8;
+    background: #D5D5D5;
     background: -webkit-gradient(linear, left top, left bottom, from(#fcf5f5), to(#fad9d9));
     background: -moz-linear-gradient(top, #fcf5f5 0%, #fad9d9 100%);
     border: 1px solid #ed9393;
-    color: #983030;
+    color: black;
+    font-weight: bold;
     display: inline !important;
     margin-left: 10px;
     -moz-box-shadow: 0 0 2px #DDD;
@@ -645,7 +630,7 @@ background: url("../../../images/src/context_down.png") no-repeat;
     -webkit-border-radius: 3px;
 }
 .d_measure a {
-    color: #983030;
+    color: black;
     text-decoration: none;
 }
 .d_measure span.sort.BASC,
