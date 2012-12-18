@@ -116,8 +116,9 @@ var Workspace = Backbone.View.extend({
     
     clear: function() {
         // Prepare the workspace for a new query
-        $(this.el).find('.workspace_results table,.connectable')
-            .html('');
+        $(this.el).find('.workspace_results table').html('');
+        $(this.el).find('.connectable').html('');
+        //$(this.el).find('.connectable').html('<li class="placeholder">Drop Here</li>');
             
         // Trigger clear event
         Saiku.session.trigger('workspace:clear', { workspace: this });
