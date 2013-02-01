@@ -29,7 +29,8 @@ var WorkspaceDropZone = Backbone.View.extend({
         'click .d_dimension a': 'selections',
         'click .d_measure a' : 'remove_dimension',
         'click .d_measure span.sort' : 'sort_measure',
-        'click .d_dimension span.sort' : 'sort_measure'
+        'click .d_dimension span.sort' : 'sort_measure',
+        'click .limit' : 'limit_axis'
     },
     
     initialize: function(args) {
@@ -38,7 +39,7 @@ var WorkspaceDropZone = Backbone.View.extend({
         
         // Maintain `this` in jQuery event handlers
         _.bindAll(this, "select_dimension", "move_dimension", 
-                "remove_dimension", "update_selections","sort_measure");
+                "remove_dimension", "update_selections","sort_measure", "limit_axis", "set_query_axis", "set_query_axis_filter");
     },
     
     render: function() {
@@ -66,6 +67,233 @@ var WorkspaceDropZone = Backbone.View.extend({
         
         return this; 
     },
+    limit_axis: function(event) {
+        var self = this;
+        
+        if (typeof this.workspace.query == "undefined") {
+            return false;
+        }
+        if (this.workspace.query.get('type') != 'QM' || Settings.MODE == "view") {
+            return false;
+        }
+        $axis = $(event.target).siblings('.fields_list_body');
+        var source = "";
+        var target = "ROWS";
+        if ($axis.hasClass('rows')) { target = "ROWS";  }
+        if ($axis.hasClass('columns')) { target = "COLUMNS";  }
+        if ($axis.hasClass('filter')) { target = "FILTER";  }
+
+
+        $target =  $(event.target).hasClass('limit') ? $(event.target) : $(event.target).parent();
+        $body = $(document);
+        $body.off('.contextMenu .contextMenuAutoHide');
+        $('.context-menu-list').remove();
+        $.contextMenu('destroy');
+        $.contextMenu({
+            appendTo: $target,
+            selector: '.limit', 
+            ignoreRightClick: true,
+             build: function($trigger, e) {
+                var query = self.workspace.query;
+                var schema = query.get('schema');
+                var cube = query.get('connection') + "/" + 
+                    query.get('catalog') + "/"
+                    + ((schema == "" || schema == null) ? "null" : schema) 
+                    + "/" + query.get('cube');
+
+                var items = {};
+                var measures = Saiku.session.sessionworkspace.measures[cube].get('data');
+
+                var func, n, sortliteral, filterCondition;
+                var quick = "";
+                var isFilter = false;
+                var axes = self.workspace.query.get('axes');
+                _.each(axes, function(a) {
+                    if (a.name == target) {
+                        func = a.limitFunction;
+                        n = a.limitFunctionN;
+                        sortliteral = a.limitFunctionSortLiteral;
+                        filterCondition = a.filterCondition;
+                        isFilter = (a.filterCondition != null);
+                    }
+                });
+
+                if (func != null && sortliteral == null) {
+                    quick = func + "###SEPARATOR###" + n;
+                } else if (func != null && sortliteral != null && n != null) {
+                    quick = "custom";
+                }
+
+                _.each(measures, function(measure) {
+                    items[measure.uniqueName] = {
+                        name: measure.caption,
+                        payload: {
+                            "n"     : 10,
+                            "sortliteral"    : measure.uniqueName
+                        }
+                    };
+                });
+
+
+                var addFun = function(items, fun) {
+                    var ret = {};
+                    for (key in items) {
+                        ret[ (fun + '###SEPARATOR###'+ key) ] = _.clone(items[key]);
+                        ret[ (fun + '###SEPARATOR###' + key) ].fun = fun;
+                        if (fun == func && sortliteral == key && items[key].payload["n"] == n) {
+                            ret[ (fun + '###SEPARATOR###' + key) ].name =
+                                    "<b>" + items[key].name + "</b>";
+                            quick = fun + "Quick";
+                        }
+                    }
+                    return ret;
+                }
+
+                var citems = {
+                        "namefilter" : {name: "<b>Filter</b>", disabled: true },
+                        "customfilter": {name: "Custom..." },
+                        "clearfilter": {name: "Clear Filter" },
+                        "empty" : {name: "&nbsp; ", disabled: true },
+                        "sep1": "---------",
+                        "namelimit" : {name: "<b>Limit</b>", disabled: true },
+                        "TopCount###SEPARATOR###10": {name: "Top 10" },
+                        "BottomCount###SEPARATOR###10": {name: "Bottom 10" }
+                };
+                citems["TopCountQuick"] = {
+                        name: "Top 10 by...",
+                        items: addFun(items, "TopCount")
+                };
+                citems["BottomCountQuick"] = {
+                        name: "Bottom 10 by...",
+                        items: addFun(items, "BottomCount")
+                };
+
+
+                citems["custom"] = {
+                        name: "Custom..."
+                };
+
+                citems["clear"] = {
+                        name: "Clear Limit"
+                };
+                items["10"] = {
+                   payload: { "n" : 10 }
+                }
+
+                if (quick in citems) {
+                    citems[quick].name = "<b>" + citems[quick].name + "</b>";
+                }
+                if (isFilter) {
+                    citems["customfilter"].name = "<b>" + citems["customfilter"].name + "</b>";
+                }
+
+                return {
+                    callback: function(key, options) {
+                            if (key == "clearfilter") {
+                                $target.removeClass('on');
+                                var url = "/axis/" + target + "/filter";
+                                self.set_query_axis_filter(target, null);
+                                self.workspace.query.action.del(url, {
+                                    success: self.workspace.query.run
+                                });
+                            } else if (key == "customfilter") {
+                                var save_custom = function(filterCondition) {
+                                    self.set_query_axis_filter(target, filterCondition);
+                                    var url = "/axis/" + target + "/filter/" ;
+                                    self.workspace.query.action.post(url, {
+                                        success: self.workspace.query.run, data : { filterCondition: filterCondition }
+                                    });    
+                                };
+
+                                 (new FilterModal({ 
+                                    axis: target,
+                                    success: save_custom, 
+                                    query: self.workspace.query,
+                                    filterCondition: filterCondition
+                                })).render().open();
+
+                            } else if (key == "clear") {
+                                $target.removeClass('on');
+                                var url = "/axis/" + target + "/limit";
+                                self.set_query_axis(target, null, null, "");
+                                self.workspace.query.action.del(url, {
+                                    success: self.workspace.query.run
+                                });
+                            } else if (key == "custom") {
+
+                                var save_custom = function(fun, n, sortliteral) {
+                                    self.set_query_axis(target, fun, n, sortliteral);
+                                    var url = "/axis/" + target + "/limit/" + fun;
+                                    self.workspace.query.action.post(url, {
+                                        success: self.workspace.query.run, data : { n: n, sortliteral: sortliteral }
+                                    });    
+                                };
+
+                                 (new CustomFilterModal({ 
+                                    axis: target,
+                                    measures: measures,
+                                    success: save_custom, 
+                                    query: self.workspace.query,
+                                    func: func,
+                                    n: n,
+                                    sortliteral: sortliteral
+                                })).render().open();
+                            } else {
+                                var fun = key.split('###SEPARATOR###')[0];
+                                var ikey = key.split('###SEPARATOR###')[1];
+                                self.set_query_axis(target, fun, items[ikey].payload.n , items[ikey].payload["sortliteral"]);
+                                var url = "/axis/" + target + "/limit/" + fun;
+                                self.workspace.query.action.post(url, {
+                                    success: self.workspace.query.run, data : items[ikey].payload
+                                });
+                            }
+
+                    },
+                    items: citems
+                } 
+            }
+        });
+    $target.contextMenu();
+
+
+    },
+
+    set_query_axis_filter: function(target, filterCondition) {
+        var self = this;
+        var axes = this.workspace.query.get('axes');
+        _.each(axes, function(axis) {
+            if (axis.name == target) {
+                axis.filterCondition = filterCondition;
+                if (axis.limitFunction !=  null || axis.filterCondition != null) {
+                    $(self.el).find('.fields_list[title="' + target + '"] .limit').addClass('on');
+                } else {
+                    $(self.el).find('.fields_list[title="' + target + '"] .limit').removeClass('on');
+                }
+                return false;
+            }
+        });
+        return false;
+    },
+
+        set_query_axis: function(target, func, n, sortliteral) {
+        var self = this;
+        var axes = this.workspace.query.get('axes');
+        _.each(axes, function(axis) {
+            if (axis.name == target) {
+                axis.limitFunction = func;
+                axis.limitFunctionN = n;
+                axis.limitFunctionSortLiteral = sortliteral;
+                if (axis.limitFunction !=  null || axis.filterCondition != null) {
+                    $(self.el).find('.fields_list[title="' + target + '"] .limit').addClass('on');
+                } else {
+                    $(self.el).find('.fields_list[title="' + target + '"] .limit').removeClass('on');
+                }
+                return false;
+            }
+        });
+        return false;
+    },
+
 
     sort_measure: function(event, ui) {
         $axis = $(event.target).parent().parents('.fields_list_body');

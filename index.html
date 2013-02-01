@@ -78,6 +78,8 @@
         <script type="text/javascript" src="js/saiku/views/LoginForm.js"></script>
         <script type="text/javascript" src="js/saiku/views/AboutModal.js"></script>
         <script type="text/javascript" src="js/saiku/views/AddFolderModal.js"></script>
+        <script type="text/javascript" src="js/saiku/views/FilterModal.js"></script>
+        <script type="text/javascript" src="js/saiku/views/CustomFilterModal.js"></script>
         <script type="text/javascript" src="js/saiku/views/WorkspaceToolbar.js"></script>
         <script type="text/javascript" src="js/saiku/views/WorkspaceDropZone.js"></script>
         <script type="text/javascript" src="js/saiku/views/Table.js"></script>
@@ -246,7 +248,7 @@
         <script type="text/x-jquery-tmpl" id="template-workspace-dropzones">
         <div class="workspace_fields">
             <div class="fields_list" title="COLUMNS">
-                <div class="fields_list_header i18n">Columns</div>
+                <div class="fields_list_header i18n disabled_toolbar">Columns<span></span></div>
                 <div class="fields_list_body columns">
                     <ul class="connectable">
                         <li class="placeholder">Drop Here</li>
@@ -256,7 +258,7 @@
             </div>
 
             <div class="fields_list" title="ROWS">
-                <div class="fields_list_header i18n">Rows</div>
+                <div class="fields_list_header i18n disabled_toolbar">Rows<span></span></div>
                 <div class="fields_list_body rows">
                     <ul class="connectable">
                         <li class="placeholder">Drop Here</li>
@@ -265,7 +267,7 @@
                 <div class="clear"></div>
             </div>
             <div class="fields_list" title="FILTER">
-                <div class="fields_list_header i18n">Filter</div>
+                <div class="fields_list_header i18n disabled_toolbar">Filter<span></span></div>
                 <div class="fields_list_body filter">
                     <ul class="connectable">
                         <li class="placeholder">Drop Here</li>
@@ -330,6 +332,12 @@
             <li><a href="#switch_to_mdx" 
                 class="i18n switch_to_mdx button disabled_toolbar" 
                 title="Switch to MDX Mode"></a></li>
+            <li class="seperator"><a href="#spark_bar" 
+                class="i18n spark_bar button disabled_toolbar" 
+                title="Spark Bars">sB</a></li>
+            <li><a href="#spark_line" 
+                class="i18n spark_line button disabled_toolbar" 
+                title="Spark Lines">sL</a></li>
         </ul>
         </script>
         

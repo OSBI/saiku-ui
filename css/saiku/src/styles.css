@@ -472,6 +472,34 @@ html, body {
     text-shadow: 1px 1px 0 #FFFFFF;
     width: 200px;
 }
+.fields_list .limit {
+    cursor: pointer;
+}
+
+.limit span {
+background: url("../../../images/src/context_down.png") no-repeat;
+    height: 16px;
+    width: 14px;
+    float: right;
+    cursor: pointer;
+}
+
+
+.fields_list .limit:hover {
+    border: 1px solid #CCC;
+    background: none;
+    background-color: #A0A0A0 ;
+    padding: 1px 4px 2px 4px;
+}
+.fields_list .on {
+    border: 1px solid #CCC;
+    background: none;
+    background-color: #A0A0A0 ;
+    padding: 1px 4px 2px 4px;
+    
+}
+
+
 .fields_list .fields_list_body {
     float: left;
     padding:  0;
@@ -851,7 +879,28 @@ background: url("../../../images/src/sort_none.png") no-repeat;
     height: 130px;
 }
 
+.dialog_filter .dialog_icon {
+    display: none;
+}
+.dialog_filter .dialog_body {
+    margin: 15px;
+    line-height: 30px;
+}
+.dialog_filter .dialog_body .n {
+    width: 40px;
+}
 
+.dialog_filter td.col1 {
+    width: 240px;
+}
+.dialog_filter textarea.sortliteral {
+    width: 200px;
+    height: 40px;
+}
+.dialog_filter textarea.filter_expression {
+    width: 300px;
+    height: 60px;
+}
 
 
 .dialog_drillthrough .dialog_icon {
