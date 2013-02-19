@@ -410,19 +410,11 @@ html, body {
     background: url('../../../images/src/bullet_green.png') 0px -2px no-repeat;
 }
 
-@-moz-document url-prefix() {
-    .sidebar h3.top {
-    border-top: none !important;
-    margin: 0;
-    padding-top: 6px;
-}
 .sidebar h3 {
     line-height: 1.5em;
     margin: 0;
     padding: 5px 10px 6px;
 }
-}
-
 
 /** Tab Panel */
 
