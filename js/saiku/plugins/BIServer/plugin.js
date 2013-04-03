@@ -93,6 +93,8 @@ if (Settings.INTEGRATION == "pentaho") {
 
     $(document).ready(function() {
         Saiku.session = new Session();
+		
+		$.getScript(Settings.REST_URL + Saiku.session.username + "/plugin/plugins"); 
     });
 }
 
