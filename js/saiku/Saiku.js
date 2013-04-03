@@ -72,7 +72,18 @@ Backbone.emulateHTTP = false;
 /**
  * Up up and away!
  */
-if (! Settings.BIPLUGIN) {
+if (Settings.INTEGRATION == "standalone") {
+    $(document).ready(function() {
+        Saiku.session = new Session({}, {
+            username: Settings.USERNAME,
+            password: Settings.PASSWORD
+        });
+
+        Saiku.toolbar = new Toolbar();
+    });
+}
+
+if (Settings.INTEGRATION == "stripped") {
     $(document).ready(function() {
         Saiku.session = new Session({}, {
             username: Settings.USERNAME,

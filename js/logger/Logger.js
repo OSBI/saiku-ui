@@ -52,7 +52,7 @@ if (Settings.ERROR_LOGGING) {
             	    lineNumber: lineNumber,
             	    timestamp: new Date(),
                     version: Settings.VERSION,
-                    biplugin: Settings.BIPLUGIN
+                    integration: Settings.INTEGRATION
             });
 
             console.error({
