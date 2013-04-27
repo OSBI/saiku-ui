@@ -567,32 +567,16 @@ background: url("../../../images/src/context_down.png") no-repeat;
 .ui-sortable-helper a {
     cursor: move !important;
 }
-.ui-draggable-dragging {
-    display: inline !important;
-    height: 15px !important;
-    line-height: 15px !important;
-    list-style-type: none !important;
-    margin: 0 !important;
-    min-width: 70px;
-    padding: 0 6px !important;
-    text-align: center;
-    -moz-box-shadow: 0 0 2px #DDD;
-    -moz-border-radius: 3px;
-    -webkit-box-shadow: 0 0 2px #DDD;
-    -webkit-border-radius: 3px;
-}
-.ui-draggable-dragging a {
-    background-image: none !important;
-    cursor: move !important;
-    padding: 0 !important;
-}
 .dimension_tree ul .ui-draggable-dragging {
-    background: #e5f6ff !important;
-    background: -webkit-gradient(linear, left top, left bottom, from(#e0e9ef), to(#c2d5e2)) !important;
-    background: -moz-linear-gradient(top, #e0e9ef 0%, #c2d5e2 100%) !important;
-    border: 1px solid #2a6085 !important;
-    color: #2a6085 !important;
-    text-align: center;
+    display: inline;
+    width: auto !important;
+    border: 1px solid #2a6085;
+    color: #2a6085;
+    text-align: left;
+    border-radius: 3px;
+    background: #e5f6ff;
+    background: -webkit-gradient(linear, left top, left bottom, from(#e0e9ef), to(#c2d5e2));
+    background: -moz-linear-gradient(top, #e0e9ef 0%, #c2d5e2 100%);
 }
 .dimension_tree ul .ui-draggable-dragging a {
     color: #2a6085 !important;
@@ -608,6 +592,7 @@ background: url("../../../images/src/context_down.png") no-repeat;
 .measure_tree ul .ui-draggable-dragging a {
     color: #983030 !important;
 }
+
 .d_dimension {
     background: #e5f6ff;
     background: -webkit-gradient(linear, left top, left bottom, from(#e0e9ef), to(#c2d5e2));
@@ -729,18 +714,17 @@ background: url("../../../images/src/sort_none.png") no-repeat;
     font-weight: normal !important;
 }
 .ui-dialog {
-    background: #FFF;
-    border: 3px solid #EEE;
-    min-width: 400px !important;
-    min-height: auto !important;
-    -moz-border-radius: 3px;
-    -webkit-border-radius: 3px;
-    -moz-box-shadow: 0 0 10px #EEE;
-    -webkit-box-shadow: 0 0 10px #EEE;
+    display: block !important;
+    min-width: 500px;
+    min-height: 460px;
+    z-index: 99999;
+    background-color: #fff;
+    box-shadow: 0 0 10px #EEE;
     border: 1px solid #CCC;
-    -moz-border-radius: 1px;
-    -webkit-border-radius: 1px;
+    border-radius: 0;
+    padding: 0;
 }
+
 .ui-dialog input[type=text],
 .ui-dialog input[type=password] {
     padding: 4px;
