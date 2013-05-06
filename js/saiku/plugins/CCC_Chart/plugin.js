@@ -19,7 +19,12 @@
  */
 var Chart = Backbone.View.extend({
 
-	options: {},
+	cccOptions: {
+        type: "BarChart",
+        stacked: true
+    },
+
+    data: null,
 
     getChartProperties: function(chartName) { 
         var self = this; 
@@ -40,22 +45,22 @@ var Chart = Backbone.View.extend({
         // Create a unique ID for use as the CSS selector
         this.id = _.uniqueId("chart_");
         $(this.el).attr({ id: this.id });
+        this.cccOptions.canvas = this.id;
+        this.cccOptions = this.getQuickOptions(this.cccOptions);
 
         this.data = null;
         
         // Bind table rendering to query result event
-        _.bindAll(this, "receive_data", "process_data", "show",  "getData", "render_view", "render_quick", "show_table", "exportChart");
+        _.bindAll(this, "receive_data", "process_data", "show",  "getData", "render_view", "render_chart", "getQuickOptions","exportChart");
         this.workspace.bind('query:result', this.receive_data);
         Saiku.session.bind('workspace:new', this.render_view);
         
-        // Add chart button
-        this.workspace.toolbar.chart = this.show;
         
         // Listen to adjust event and rerender chart
         this.workspace.bind('workspace:adjust', this.render);
         
         // Create navigation
-        var exportoptions = "<div><a id='inline' href='#chartpopup' class='hide charteditor i18n' />Export to: " +
+        var exportoptions = "<div><a class='hide' href='#charteditor' id='acharteditor' /><!--<a class='editor' href='#chart_editor'>Advanced Properties</a>-->Export to: " +
                 "<a class='export' href='#png' class='i18n'>PNG</a>, " +
                 "<a class='export' href='#pdf' class='i18n'>PDF</a>, " +
                 //"<a class='export' href='#tiff' class='i18n'>TIFF</a>, " +
@@ -81,6 +86,7 @@ var Chart = Backbone.View.extend({
                 });
 
         this.nav.find('a.export').click(this.exportChart);
+        
 
         this.nav.find('a').css({ 
                     color: '#666', 
@@ -89,7 +95,7 @@ var Chart = Backbone.View.extend({
                     'border': '1px solid #ccc', 
                     padding: '5px' 
                 });
-        $(this.el).append('<div style="display:none"><div id="chartpopup"></div></div>');
+        $(this.nav).append('<div style="display:none;"> <div id="charteditor" class="chart_editor"></div></div>');
         
         this.editor = new ChartEditor({  workspace : this.workspace, 
                                         ChartProperties : ChartProperties, 
@@ -97,7 +103,7 @@ var Chart = Backbone.View.extend({
                                         data : this.getData, 
                                         getChartProperties : this.getChartProperties});
 
-        $(this.el).find('#chartpopup').append($(this.editor.el));
+        $(this.nav).find('.chart_editor').append($(this.editor.el));
 
     },
 
@@ -123,192 +129,242 @@ var Chart = Backbone.View.extend({
         $(this.workspace.el).find('.workspace_results')
             .prepend($(this.el).hide())
             .prepend(this.nav.hide());
-
     },
     
     getData: function() {
         return this.data;
-
     },
 
-    show: function(event, ui) {    	
-    	var self = this;
-        $target =  $(event.target);
-        $body = $(document);
-        if (!$(event.target).hasClass('on')) {
-            this.process_data({ data: this.workspace.query.result.lastresult() });
+    show: function(event, ui) {
+        $(this.el).show();
+        $(this.nav).show();
+        $('a#acharteditor').fancybox(
+                                   {
+                                   'autoDimensions'    : false,
+                                   'autoScale'         : false,
+                                   'height'            :  ($("body").height() - 140),
+                                   'width'             :  ($("body").width() - 100),
+                                   'transitionIn'      : 'none',
+                                   'transitionOut'     : 'none',
+                                   'type'              : 'inline'
+                                   }
+                               );
+
+        if (this.cccOptions.width <= 0) {
+            this.cccOptions.width = $(this.workspace.el).find('.workspace_results').width() - 40;
+        }
+        if (this.cccOptions.height <= 0) {
+            this.cccOptions.height = $(this.workspace.el).find('.workspace_results').height() - 40;
         }
 
-        $body.off('.contextMenu .contextMenuAutoHide');
-        $('.context-menu-list').remove();
-        $.contextMenu('destroy');
-        $.contextMenu({
-            appendTo: $target,
-            selector: '.chart', 
-            ignoreRightClick: true,
-            build: function($trigger, e) {
-             	var citems = {
-                        "bar" : {name: "Bar Chart" },
-						"stackedBar" : {name: "Stacked Bar Chart" },
-						"line" : {name: "Line Chart" },
-						"pie" : {name: "Pie Chart" },
-						"heatgrid" : {name: "Heat Grid" },
-						"sep1" : "-------",
-						//"chart_editor" : {name: "Chart Editor..." },
-						"show_table" : {name: "Show Table"}
-                };
-
-            return {
-                    callback: function(key, options) {
-                    			$(self.workspace.toolbar.el).find('.chart').addClass('on');
-                    			$(self.workspace.el).find('.workspace_results table').hide();
-                    			$(self.nav).show();
-                    			$('a#inline').fancybox(
-						            {
-						            'autoDimensions'    : false,
-						            'autoScale'         : false,
-						            'height'            :  ($("body").height() - 100),
-						            'width'             :  ($("body").width() - 100),
-						            'transitionIn'      : 'none',
-						            'transitionOut'     : 'none',
-						            'type'              : 'inline'
-						            }
-						        );
-                                try {
-						            self[key]();
-						        } catch (e) { }
-						        return true;
-
-                    },
-                    items: citems
-                 }
-            }
-          }); 
-    	
-    	$target.contextMenu();
-
-
-    },
-
-    show_table: function() {
-    	$(this.workspace.toolbar.el).find('.chart').removeClass('on');
-    	$(this.workspace.el).find('.workspace_results table').show();
-        $(this.el).hide();
-        $(this.nav).hide();
-        return true;
+        this.process_data({ data: this.workspace.query.result.lastresult() });
     },
 
     chart_editor: function() {
-		$('a#inline').click();
+		$('a#acharteditor').click();
 		return true;
-
     },
 
     stackedBar: function() {
-        this.options.stacked = true;
-        this.options.type = "BarChart";
-        this.options.multiChartIndexes = null;
-        this.render_quick();
+        var options = {
+            stacked: true,
+            type: "BarChart"
+        };
+        this.cccOptions = this.getQuickOptions(options);
+        this.render_chart();
     },
     
     bar: function() {
-        this.options.stacked = false;
-        this.options.type = "BarChart";
-        this.options.multiChartIndexes = null;
+        var options = {
+            type: "BarChart"
+        };
+        this.cccOptions = this.getQuickOptions(options);
+        this.render_chart();
+        
         /*
-        this.options.multiChartIndexes = [1];
-        this.options.dataMeasuresInColumns = true;
-        this.options.orientation = 'horizontal';
-        this.options.smallTitlePosition = 'top';
-        this.options.multiChartColumnsMax = 5;
-        this.options.smallWidth = 100;
-        this.options.smallHeight = 300;
+        this.cccOptions.multiChartIndexes = [1];
+        this.cccOptions.dataMeasuresInColumns = true;
+        this.cccOptions.orientation = 'horizontal';
+        this.cccOptions.smallTitlePosition = 'top';
+        this.cccOptions.multiChartColumnsMax = 5;
+        this.cccOptions.smallWidth = 100;
+        this.cccOptions.smallHeight = 300;
 		*/
-        this.render_quick();
+    },
+
+    multiplebar: function() {
+        var options = {
+            type: "BarChart",
+            multiChartIndexes: [1],
+            dataMeasuresInColumns: true,
+            orientation: "vertical",
+            smallTitlePosition: "top",
+            multiChartColumnsMax: Math.floor( this.cccOptions.width / 200),
+            smallWidth: 200,
+            smallHeight: 150
+
+        };
+        this.cccOptions = this.getQuickOptions(options);
+        this.render_chart();
     },
     
     line: function() {
-        this.options.stacked = false;
-        this.options.type = "LineChart";
-        this.options.multiChartIndexes = null;
-        this.render_quick();
+        var options = {
+            type: "LineChart"
+        };
+
+        this.cccOptions = this.getQuickOptions(options);
+        this.render_chart();
     },
     
     pie: function() {
-        this.options.stacked = false;
-        this.options.type = "PieChart";
-        this.options.multiChartIndexes = [0];
-        this.options.multiChartColumnsMax = 5;
-        this.options.multiChartMax = 30;
-        this.render_quick();
+        var options = {
+            type: "PieChart",
+            multiChartIndexes: [0] // ideally this would be chosen by the user (count, which)
+        };
+        this.cccOptions = this.getQuickOptions(options);
+        this.render_chart();
     },
 
     heatgrid: function() {
-        this.options.stacked = false;
-        this.options.type = "HeatGridChart";
-        this.options.multiChartIndexes = null;
-        this.render_quick();
+        var options = {
+            type: "HeatGridChart"
+        };
+        this.cccOptions = this.getQuickOptions(options);
+        this.render_chart();
     },
 
+    stackedBar100: function() {
+        var options = {
+            type: "NormalizedBarChart"
+        };
+        this.cccOptions = this.getQuickOptions(options);
+        this.render_chart();
+    },
+
+    area: function() {
+        var options = {
+            type: "StackedAreaChart"
+        };
+        this.cccOptions = this.getQuickOptions(options);
+        this.render_chart();
+    },
+    dot: function() {
+        var options = {
+            type: "DotChart"
+        };
+        this.cccOptions = this.getQuickOptions(options);
+        this.render_chart();
+    },
+    waterfall: function() {
+        var options = {
+            type: "WaterfallChart"
+        };
+        this.cccOptions = this.getQuickOptions(options);
+        this.render_chart();
+    },
+
+    // Default static style-sheet
+    cccOptionsDefault: {
+        Base: {
+            animate: false,
+            selectable: true,
+            valuesVisible: false,
+            legend:  true,
+            legendPosition: "top",
+            legendAlign: "right",
+            legendSizeMax: "30%",
+            axisSizeMax: "40%",
+            colors: ["#4bb2c5", "#c5b47f", "#EAA228", "#579575", "#839557", "#958c12", "#953579", "#4b5de4", "#d8b83f", "#ff5800", "#0085cc"]
+        },
+        
+        HeatGridChart: {
+            orientation: "horizontal",
+            useShapes: true,
+            shape: "circle",
+            nullShape: "cross",
+            colorNormByCategory: false,
+            sizeRole: "value",
+            legend: false,
+            hoverable: true,
+            axisComposite: true,
+            colors: ["red", "yellow", "lightgreen", "darkgreen"],
+            xAxisSize: 130,
+            yAxisSize: 130
+        },
+        
+        WaterfallChart: {
+            orientation: "horizontal"
+        },
+        
+        PieChart: {
+            multiChartColumnsMax: 3,
+            multiChartMax: 30,
+            smallTitleFont: "bold 14px sans-serif",
+            valuesVisible: true,
+            explodedSliceRadius: '5%',
+            extensionPoints: {
+                slice_innerRadiusEx: '40%'
+            }
+            //valuesLabelStyle: 'inside'
+        },
+        
+        LineChart: {
+            extensionPoints: {
+                area_interpolate: "monotone", // cardinal
+                line_interpolate: "monotone"
+            }
+        },
+        
+        StackedAreaChart: {
+            extensionPoints: {
+                area_interpolate: "monotone",
+                line_interpolate: "monotone"
+            }
+        }
+    },
     
-    render_quick: function() {
-        if (! $(this.workspace.toolbar.el).find('.chart').hasClass('on')) {
+    getQuickOptions: function(baseOptions) {
+        var chartType = (baseOptions && baseOptions.type) || "BarChart";
+        var workspaceResults = $(this.workspace.el).find(".workspace_results");
+        
+        var options = _.extend({
+                type:   chartType,
+                canvas: this.id,
+                width:  workspaceResults.width() - 40,
+                height: workspaceResults.height() - 40,
+            },
+            this.cccOptionsDefault.Base,
+            this.cccOptionsDefault[chartType], // may be undefined
+            baseOptions);
+        
+        if(this.data != null && this.data.resultset.length > 5) {
+            if(options.type === "HeatGridChart") {
+                options.xAxisSize = 150;
+            } else if(options.orientation !== "horizontal") {
+                options.extensionPoints = _.extend(Object.create(options.extensionPoints || {}),
+                    {
+                        xAxisLabel_textAngle: -Math.PI/2,
+                        xAxisLabel_textAlign: "right",
+                        xAxisLabel_textBaseline:  "middle"
+                    });
+            }
+        }
+        
+        return options;
+    },
+    
+    render_chart: function() {
+        if (! $(this.workspace.querytoolbar.el).find('.render_chart').hasClass('on')) {
             return;
         }
         
-        var options = _.extend({        
-            canvas: this.id,
-            width: $(this.workspace.el).find('.workspace_results').width() - 40,
-            height: $(this.workspace.el).find('.workspace_results').height() - 40,
-            orientation: 'vertical',
-            stacked: false,
-            animate: false,
-            selectable: true,
-            showValues: false,
-            legend: true,
-            legendPosition:"top",
-            legendAlign: "right",
-            colors: ["#4bb2c5", "#c5b47f", "#EAA228", "#579575", "#839557", "#958c12", "#953579", "#4b5de4", "#d8b83f", "#ff5800", "#0085cc"],
-            type: 'BarChart'
-        }, this.options);
-        
-        if (options.type == "HeatGridChart") {
-            options = _.extend({
-                    canvas: this.id,
-                    width: $(this.workspace.el).find('.workspace_results').width() - 40,
-                    height: $(this.workspace.el).find('.workspace_results').height() - 40,
-                    orientation: "horizontal",
-                    useShapes:     true,
-                    shape:         'circle',
-                    nullShape:     'cross',
-                    colorNormByCategory: false,
-                    sizeRole:      'value', 
-                    ctrlSelectMode: true,
-                    hoverable:      true,
-                    valuesVisible:  false,
-                    axisComposite: true,
-                    colors: ['red', 'yellow', 
-             'lightgreen', 'darkgreen'],
-                    selectable: true,
-                    xAxisSize: 130,
-                    extensionPoints: {
-                        xAxisLabel_textAngle: -(Math.PI / 2),
-                        xAxisLabel_textAlign: "right",
-                        xAxisLabel_bottom: 10
-                    }
-            }, this.options);
-        }
-        if (this.data.resultset.length > 5 ) {
-            options.extensionPoints = {
-                xAxisLabel_textAngle: -(Math.PI / 2),
-                xAxisLabel_textAlign: "right",
-                xAxisLabel_bottom: 10
-            };
-            
-            options.xAxisSize = 100;
-        }
-        
-        this.chart = new pvc[options.type](options);
+
+        this.editor.chartDefinition = _.clone(this.cccOptions);
+        this.editor.set_chart("pvc." + this.cccOptions.type);
+        this.editor.render_chart_properties("pvc." + this.cccOptions.type, this.editor.chartDefinition);
+
+        this.chart = new pvc[this.cccOptions.type](this.cccOptions);
         
         this.chart.setData(this.data, {
             crosstabMode: true,
@@ -324,7 +380,7 @@ var Chart = Backbone.View.extend({
     },
             
     receive_data: function(args) {
-        if (! $(this.workspace.toolbar.el).find('.chart').hasClass('on')) {
+        if (! $(this.workspace.querytoolbar.el).find('.render_chart').hasClass('on')) {
             return;
         }
         return _.delay(this.process_data, 0, args);
@@ -337,6 +393,9 @@ var Chart = Backbone.View.extend({
         this.data.metadata = [];
         this.data.height = 0;
         this.data.width = 0;
+
+        if (typeof args.data == "undefined")
+            return false;
 
         var cellset = args.data.cellset;
         if (cellset && cellset.length > 0) {
@@ -426,7 +485,7 @@ var Chart = Backbone.View.extend({
             }
             //makeSureUniqueLabels(this.data.resultset);
             this.data.height = this.data.resultset.length;
-            this.render_quick();
+            this.render_chart();
         } else {
             $(this.el).text("No results");
         }
@@ -434,166 +493,3 @@ var Chart = Backbone.View.extend({
 });
 
 
-var ChartEditor = Backbone.View.extend({
-    events: {
-        'change .chartlist': 'change_chart',
-        'click  td' : 'click_property',
-        'click input.save_chart' : 'save_chart'
-    },
-
-    templateEditor :
-     '<div class="chartworkspace">' 
-    +'    <div class="sidebar">'
-    +'<span>'
-    +'        <div>'
-    +'            <h3 class="top i18n">Charts</h3>'
-    +'        </div>'
-    +'        <div class="sidebar_inner">'
-    +'            <%= chartList %>'
-    +'        </div>'
-    +'        <h3 class="i18n">Properties</h3>'
-    +'        <div class="sidebar_inner properties_table"></div>'
-    +'    </div>  '
-    +'    <div class="sidebar_separator"></div>'
-    +' </span></span>'
-    +' <input class="save_chart" type="submit" value="SAVE CHART" /> <br >'
-    +'        <div class="chartworkspace_inner">'
-    +'        </div></span>'
-    +'    </div>' ,
-    
-    chartDefinition: {},
-
-    initialize: function(args) {
-        // Don't lose this
-        _.bindAll(this, "change_chart", "render_chart_properties", "click_property", "save_property", "cancel_property", 
-                            "check_input", "get_chart_definition", "getData", "render_chart");
-        
-        // Bind parent element
-        this.workspace = args.workspace;
-        this.ChartProperties = args.ChartProperties;
-        this.ChartTypes = args.ChartTypes;
-        this.getData = args.data;
-        this.getChartProperties = args.getChartProperties;
-        this.chartDefinition = {};
-        var chartList = "<select class='chartlist'>";
-        _.each(this.ChartTypes, function(chart) {
-            chartList += "<option value='" + chart.ChartObject + "'>" + chart.ChartName + "</option>";
-        });
-        chartList += "</select>";
-
-        $(this.el).html(_.template(this.templateEditor)({chartList : chartList}));
-        $(this.el).find('.chartworkspace_inner').css({ 'margin-left': 400 });
-        $(this.el).find('.sidebar').css({ 'width': "400" });
-        this.chartId = _.uniqueId("chartobject_");
-        $(this.el).find('.chartworkspace_inner').html("<div id='"+ this.chartId + "'></div>")
-
-        this.change_chart();
-
-    },
-
-    getData: function() {},
-
-    change_chart: function() {
-        var chart = $(this.el).find('.chartlist').val();
-        this.render_chart_properties(chart);
-
-    },
-
-    render_chart_properties: function(chartName) {
-        var options = this.getChartProperties(chartName);
-        options = _.sortBy(options, function(property){ return property.Order; });
-
-        var table = "<table class='propertiesviewer' style='border: 1px solid grey'>";
-        _.each(options, function(property) {
-            table += "<tr>"
-            + "<td class='data property' title='" + property.Tooltip + "' href='#" + property.Name + "'>" + property.Description + "</td>"
-            + "<td class='data value' alt='" + property.DefaultValue + "'>" + property.DefaultValue + "</td></tr>";
-        });
-        table += "</table>";
-
-        $(this.el).find('.properties_table').html(table);
-        $(this.el).find('.properties_table td').css({ "border-bottom" : "1px solid grey"});
-    },
-
-    click_property: function(event) {
-        $target = $(event.target).hasClass('value') ?
-            $(event.target) : $(event.target).parent().find('.value');
-
-        var value = $target.text();
-        
-        
-        var $input = $("<input type='text' value='" + value + "' />").css({ "width" : $target.width() })
-            .keyup(this.check_input)
-            .blur(this.cancel_property);
-        $target.html('').append($input);
-        $input.focus();
-    },
-    
-    check_input: function(event) {
-        if (event.which == 13) {
-            this.save_property(event);
-        } else if (event.which == 27 || event.which == 9) {
-            this.cancel_property(event);
-        }
-         
-        return false;
-    },
-    
-    save_property: function(event) {
-        var $input = $(event.target).closest('input');
-        var value = $input.val();
-        $input.parent().text(value);
-        this.get_chart_definition();
-    },
-
-    get_chart_definition: function() {
-    this.chartDefinition = {};
-    var self = this;
-        $(this.el).find('.properties_table tr').each(function(index, element) {
-            var property = $(element).find('.property').attr('href').replace('#','');
-            var value = $(element).find('.value').text();
-            if (typeof value != "undefined" && value.length > 0) {
-                self.chartDefinition[property] = value;
-            }
-            
-        });
-    this.render_chart();
-    
-    },
-
-    render_chart: function() {
-
-        var chartName = $(this.el).find('.chartlist').val().replace('pvc.','');
-        
-        var options = this.chartDefinition;
-        options['canvas'] = this.chartId;
-        
-        this.chart = new pvc[chartName](options);
-        
-        this.chart.setData(this.getData(), {
-            crosstabMode: true,
-            seriesInRows: false
-        });
-        
-        try {
-            this.chart.render();
-            Saiku.i18n.automatic_i18n();
-        } catch (e) {
-            $(this.el).find('#' + this.chartId ).text("Could not render chart<br>" + e);
-        }
-    },
-
-    cancel_property: function(event) {
-        var $input = $(event.target).closest('input');
-        $input.parent().text($input.parent().attr('alt'));
-    },
-
-    save_chart: function(event) {
-    	//this.workspace.chart.chart = _.clone(this.chart);
-    	//this.workspace.chart.chart.options.canvas = this.workspace.chart.id;
-    	//this.workspace.chart.chart.render();
-    	return false;
-    }
-    
-
-});
