@@ -47,10 +47,12 @@ var Statistics = Backbone.View.extend({
             $('<a href="#stats" class="stats button disabled_toolbar i18n" title="Basic Statistics"></a>')
             .css({  'background-image': "url('js/saiku/plugins/Statistics/sigma.png')",
                     'background-repeat':'no-repeat',
-                    'background-position':'50% 50%'
+                    'background-position':'50% 50%',
+                    'height' : '32px',
+                    'margin-top' : '5px'
                 });
 
-        var $stats_li = $('<li></li>').append($stats_button);
+        var $stats_li = $('<li class="seperator_vertical"></li>').append($stats_button);
         $(this.workspace.querytoolbar.el).find("ul.table").append($stats_li);
     },
     
@@ -61,6 +63,8 @@ var Statistics = Backbone.View.extend({
         
         if ($(event.target).hasClass('on')) {
             this.render();
+        } else {
+            this.workspace.table.render({ data: this.workspace.query.result.lastresult() });
         }
     },
     

@@ -40,6 +40,7 @@ var Chart = Backbone.View.extend({
     },
 
     initialize: function(args) {
+        
         this.workspace = args.workspace;
         
         // Create a unique ID for use as the CSS selector
@@ -51,7 +52,21 @@ var Chart = Backbone.View.extend({
         this.data = null;
         
         // Bind table rendering to query result event
-        _.bindAll(this, "receive_data", "process_data", "show",  "getData", "render_view", "render_chart", "getQuickOptions","exportChart");
+        _.bindAll(this, "receive_data", "process_data", "show",  "getData", "render_view", "render_chart", "getQuickOptions","exportChart","block_ui");
+        var self = this;
+        this.workspace.bind('query:run',  function() {
+            if (! $(self.workspace.querytoolbar.el).find('.render_chart').hasClass('on')) {
+                return false;
+            }
+            self.data = {};
+            self.data.resultset = [];
+            self.data.metadata = [];
+            self.render_chart();
+            return false;
+        });
+
+        this.workspace.bind('query:fetch', this.block_ui);
+        
         this.workspace.bind('query:result', this.receive_data);
         Saiku.session.bind('workspace:new', this.render_view);
         
@@ -95,6 +110,7 @@ var Chart = Backbone.View.extend({
                     'border': '1px solid #ccc', 
                     padding: '5px' 
                 });
+        /* XXX - enable again later
         $(this.nav).append('<div style="display:none;"> <div id="charteditor" class="chart_editor"></div></div>');
         
         this.editor = new ChartEditor({  workspace : this.workspace, 
@@ -104,10 +120,17 @@ var Chart = Backbone.View.extend({
                                         getChartProperties : this.getChartProperties});
 
         $(this.nav).find('.chart_editor').append($(this.editor.el));
+        */
 
     },
 
-    
+    block_ui: function() {
+        if (! $(this.workspace.querytoolbar.el).find('.render_chart').hasClass('on')) {
+            return;
+        }
+        Saiku.ui.block("Updating chart data....");
+    },
+
     exportChart: function(event) {
         var type = $(event.target).attr('href').replace('#', '');
         var svgContent = new XMLSerializer().serializeToString($('svg')[0]);
@@ -156,7 +179,7 @@ var Chart = Backbone.View.extend({
         if (this.cccOptions.height <= 0) {
             this.cccOptions.height = $(this.workspace.el).find('.workspace_results').height() - 40;
         }
-
+        this.block_ui();
         this.process_data({ data: this.workspace.query.result.lastresult() });
     },
 
@@ -180,16 +203,15 @@ var Chart = Backbone.View.extend({
         };
         this.cccOptions = this.getQuickOptions(options);
         this.render_chart();
-        
         /*
         this.cccOptions.multiChartIndexes = [1];
         this.cccOptions.dataMeasuresInColumns = true;
-        this.cccOptions.orientation = 'horizontal';
-        this.cccOptions.smallTitlePosition = 'top';
-        this.cccOptions.multiChartColumnsMax = 5;
-        this.cccOptions.smallWidth = 100;
-        this.cccOptions.smallHeight = 300;
-		*/
+        this.cccOptions.orientation = 'vertical';
+        this.cccOptions.smallTitlePosition = 'left';
+        //this.cccOptions.multiChartColumnsMax = 5;
+        this.cccOptions.smallWidth = 300;
+        this.cccOptions.smallHeight = 100;
+        */
     },
 
     multiplebar: function() {
@@ -199,6 +221,7 @@ var Chart = Backbone.View.extend({
             dataMeasuresInColumns: true,
             orientation: "vertical",
             smallTitlePosition: "top",
+            multiChartMax: 30,
             multiChartColumnsMax: Math.floor( this.cccOptions.width / 200),
             smallWidth: 200,
             smallHeight: 150
@@ -275,6 +298,8 @@ var Chart = Backbone.View.extend({
             legendAlign: "right",
             legendSizeMax: "30%",
             axisSizeMax: "40%",
+            plotFrameVisible : false,
+            orthoAxisMinorTicks : false,
             colors: ["#4bb2c5", "#c5b47f", "#EAA228", "#579575", "#839557", "#958c12", "#953579", "#4b5de4", "#d8b83f", "#ff5800", "#0085cc"]
         },
         
@@ -358,11 +383,13 @@ var Chart = Backbone.View.extend({
         if (! $(this.workspace.querytoolbar.el).find('.render_chart').hasClass('on')) {
             return;
         }
-        
 
+        /* XXX - enable later
+        var start = new Date().getTime();
         this.editor.chartDefinition = _.clone(this.cccOptions);
         this.editor.set_chart("pvc." + this.cccOptions.type);
         this.editor.render_chart_properties("pvc." + this.cccOptions.type, this.editor.chartDefinition);
+        */
 
         this.chart = new pvc[this.cccOptions.type](this.cccOptions);
         
@@ -377,6 +404,10 @@ var Chart = Backbone.View.extend({
         } catch (e) {
             $(this.el).text("Could not render chart");
         }
+        Saiku.ui.unblock();
+        //var end = new Date().getTime();
+        //console.log("Duration: " + (end - start));
+
     },
             
     receive_data: function(args) {
@@ -394,9 +425,10 @@ var Chart = Backbone.View.extend({
         this.data.height = 0;
         this.data.width = 0;
 
-        if (typeof args.data == "undefined")
+        if (typeof args.data == "undefined" || args.data == null || args.data.cellset == null ) {
+            Saiku.ui.unblock();
             return false;
-
+        }
         var cellset = args.data.cellset;
         if (cellset && cellset.length > 0) {
             
@@ -485,10 +517,12 @@ var Chart = Backbone.View.extend({
             }
             //makeSureUniqueLabels(this.data.resultset);
             this.data.height = this.data.resultset.length;
+            this.cccOptions = this.getQuickOptions(this.cccOptions);
             this.render_chart();
         } else {
             $(this.el).text("No results");
         }
+        Saiku.ui.unblock();
     }
 });
 
