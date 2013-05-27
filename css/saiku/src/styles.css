@@ -1661,7 +1661,7 @@ span.cancel_search:hover {
     padding-top: 1px;
 }
 .RepositoryObjects li.query {
-    margin-left: 16px;
+    padding-left: 16px;
 }
 
 
@@ -1671,7 +1671,7 @@ span.cancel_search:hover {
 }
 
 .RepositoryObjects li a:hover {
-    background: #f0f0f0;
+    background: #B4D5FF;
 }
 
 .RepositoryObjects ul.folder_content {

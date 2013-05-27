@@ -54,6 +54,7 @@ var OpenQuery = Backbone.View.extend({
     },
     
     render: function() {
+        var self = this;
         // Load template
         $(this.el).html(this.template());
 
@@ -62,6 +63,27 @@ var OpenQuery = Backbone.View.extend({
         this.tab.bind('tab:select', this.adjust);
         $(window).resize(this.adjust);
         
+        $.contextMenu('destroy', 'li.query, div.folder_row');
+        $.contextMenu({
+                selector: 'li.query, div.folder_row',
+                events: {
+                    show: function(opt) {
+                        $( self.el ).find( '.selected' ).removeClass( 'selected' );
+                        $(this).addClass('selected');
+                    }
+                },
+                callback: function(key, options) {
+
+
+                },
+                items: {
+                    "open": {name: "<span class='i18n'>Open</span>", icon: "open" },
+                    "rename": {name: "<span class='i18n'>Rename</span>", icon: "edit"},
+                    "delete": {name: "<span class='i18n'>Delete</span>", icon: "delete"},
+                    "sep1": "---------",
+                    "new": {name: "<span class='i18n'>New Folder</span>"}
+                }
+            });
 
         return this; 
     },
