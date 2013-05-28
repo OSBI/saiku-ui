@@ -47,6 +47,21 @@ var OpenQuery = Backbone.View.extend({
                 repoObjects: repository
             } ) 
         );
+
+        $(this.el).find('li.query, div.folder_row').draggable({
+            cancel: '.not-draggable',
+            opacity: 0.60,
+            tolerance: 'pointer',
+            cursor: 'pointer',
+            revert: 'invalid',
+            stop: function() {
+            }
+        });
+
+        $(this.el).find('.folder_row')
+            .droppable({
+                accept: 'li.query, div.folder_row'
+            });
     },
     
     caption: function() {
@@ -70,9 +85,24 @@ var OpenQuery = Backbone.View.extend({
                     show: function(opt) {
                         $( self.el ).find( '.selected' ).removeClass( 'selected' );
                         $(this).addClass('selected');
+
+                        if ($(this).hasClass('folder_row')) {
+                            opt.commands.open.disabled = true;
+                            opt.items.open.disabled = true;
+                        } else {
+                            opt.commands.open.disabled = false;
+                            opt.items.open.disabled = false;
+                        }
                     }
+
                 },
                 callback: function(key, options) {
+                    if (key == "open" && $(this).hasClass('query')) {
+                        var path = $(this).find('a').attr('href').replace('#', '');
+                        var name = $(this).find('a')
+                        self.selected_query = new SavedQuery({ file: path, name: path });
+                        self.open_query();
+                    }
 
 
                 },
