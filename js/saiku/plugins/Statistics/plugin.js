@@ -18,6 +18,12 @@
  * Renders a stats for each workspace
  */
 var Statistics = Backbone.View.extend({
+
+    data: {
+        resultset: [],
+        metadata: []
+    },
+
     initialize: function(args) {
         this.workspace = args.workspace;
         
@@ -35,7 +41,7 @@ var Statistics = Backbone.View.extend({
         this.workspace.querytoolbar.stats = this.show;
         
         // Listen to adjust event and rerender stats
-        this.workspace.bind('workspace:adjust', this.render);
+        //this.workspace.bind('workspace:adjust', this.render);
         
         // Append stats to workspace
         $(this.workspace.el).find('.workspace_results')
@@ -62,7 +68,7 @@ var Statistics = Backbone.View.extend({
         $(event.target).toggleClass('on');
         
         if ($(event.target).hasClass('on')) {
-            this.render();
+            this.process_data({ data: this.workspace.query.result.lastresult() });
         } else {
             this.workspace.table.render({ data: this.workspace.query.result.lastresult() });
         }
@@ -78,15 +84,15 @@ var Statistics = Backbone.View.extend({
     },
     
     render: function() {
-        if (! $(this.workspace.querytoolbar.el).find('.stats').hasClass('on')) {
+        if (! $(this.workspace.querytoolbar.el).find('.stats').hasClass('on') || !$(this.el).is(':visible')) {
             return;
         }
 
         var createRow = function(cells, header){
-            var row = "<tr>"
-            var ohcell = header?"<th class='row_header'>":"<th class='row'>"
-            var odcell = header?"<th class='col'>":"<td class='data'>"
-            var ccell = header?"</th>":"</td>"
+            var row = "<tr>";
+            var ohcell = header?"<th class='row_header'>":"<th class='row'>";
+            var odcell = header?"<th class='col'>":"<td class='data'>";
+            var ccell = header?"</th>":"</td>";
             _.each(cells, function(it, idx){row += ((idx==0)?ohcell:odcell) 
 					+ "<div " + ((idx==0)?'class="i18n"':'') + ">"
 					+ it 
@@ -96,41 +102,43 @@ var Statistics = Backbone.View.extend({
         }
 
         var group = function(grid, el, cback){
-            var elements = _.filter(_.map(grid, function(it){return it[el]}), function(it){return it})
-            return cback(elements).toFixed(3)
+            var elements = _.filter(_.map(grid, function(it){return it[el]}), function(it){return it});
+            return cback(elements).toFixed(3);
         }
 
-        var sum = function(elems){return _.reduce(elems, function(memo, num){ return memo + num }, 0)}
-        var average = function(elems){return (sum(elems))/elems.length}
+        var sum = function(elems){return _.reduce(elems, function(memo, num){ return memo + num }, 0)};
+        var average = function(elems){return (sum(elems))/elems.length};
         var stdx = function(elems){
             var m = average(elems)
-            return Math.sqrt(sum(_.map(elems, function(it){return Math.pow(m - it,2)}))/elems.length)
+            return Math.sqrt(sum(_.map(elems, function(it){return Math.pow(m - it,2)}))/elems.length);
         }
-        var min = function(elems){return _.min(elems)}
-        var max = function(elems){return _.max(elems)}
+        var min = function(elems){return _.min(elems)};
+        var max = function(elems){return _.max(elems)};
         
-        $(this.el).empty()
-        var grid = this.data.metadata
-        var rs = this.data.resultset
-        var aux = _.filter(grid, function(it){return !it.isHeader && it.colType == 'Numeric'})
-        var columns = _.map(aux, function(it){return it.colName})
-        var idxs =_.map(columns, function(el){return _.indexOf(_.map(grid, function(it){return it.colName}), el)})
+        $(this.el).empty();
+        var grid = this.data.metadata;
+        var rs = this.data.resultset;
+        var aux = _.filter(grid, function(it){return !it.isHeader && it.colType == 'Numeric'});
+        var columns = _.map(aux, function(it){return it.colName});
+        var idxs =_.map(columns, function(el){return _.indexOf(_.map(grid, function(it){return it.colName}), el)});
         
-        var $table = $("<table style='display: table; '>")
-        var $tbody = $("<tbody>").appendTo($table)
-        $tbody.append(createRow(['Statistics'].concat(columns), true))
-        $tbody.append(createRow(['Min'].concat(_.map(idxs, function(it){return group(rs, it, min)})), false))
-        $tbody.append(createRow(['Max'].concat(_.map(idxs, function(it){return group(rs, it, max)})), false))
-        $tbody.append(createRow(['Sum'].concat(_.map(idxs, function(it){return group(rs, it, sum)})), false))
-        $tbody.append(createRow(['Average'].concat(_.map(idxs, function(it){return group(rs, it, average)})), false))
-        $tbody.append(createRow(['Std. Deviation'].concat(_.map(idxs, function(it){return group(rs, it, stdx)})), false))
+        var $table = $("<table style='display: table; '>");
+        var $tbody = $("<tbody>").appendTo($table);
+        $tbody.append(createRow(['Statistics'].concat(columns), true));
+        $tbody.append(createRow(['Min'].concat(_.map(idxs, function(it){return group(rs, it, min)})), false));
+        $tbody.append(createRow(['Max'].concat(_.map(idxs, function(it){return group(rs, it, max)})), false));
+        $tbody.append(createRow(['Sum'].concat(_.map(idxs, function(it){return group(rs, it, sum)})), false));
+        $tbody.append(createRow(['Average'].concat(_.map(idxs, function(it){return group(rs, it, average)})), false));
+        $tbody.append(createRow(['Std. Deviation'].concat(_.map(idxs, function(it){return group(rs, it, stdx)})), false));
 
-        $(this.el).append($table)
+        $(this.el).append($table);
         
 		Saiku.i18n.translate();
     },
     
     receive_data: function(args) {
+
+
         return _.delay(this.process_data, 0, args);
     },
     
@@ -141,7 +149,20 @@ var Statistics = Backbone.View.extend({
         this.data.height = 0;
         this.data.width = 0;
 
-        if (args.data.cellset && args.data.cellset.length > 0) {
+        if (typeof args == "undefined" || typeof args.data == "undefined" || !$(this.el).is(':visible')) {
+            return;
+        }
+        if (args.data != null && args.data.error != null) {
+            return this.error(args);
+        }
+
+        
+        // Check to see if there is data
+        if (args.data == null || (args.data.cellset && args.data.cellset.length === 0)) {
+            return this.no_results(args);
+        }
+
+        if (args.data && args.data.cellset && args.data.cellset.length > 0) {
             
             var lowest_level = 0;
             var isHead = true
@@ -197,8 +218,16 @@ var Statistics = Backbone.View.extend({
             this.data.height = this.data.resultset.length;
             this.render();
         } else {
-            $(this.el).text("No results");
+            this.no_results();
         }
+    },
+
+    no_results: function(args) {
+        $(this.el).text("No results");
+    },
+    
+    error: function(args) {
+        $(this.el).text(safe_tags_replace(args.data.error));
     }
 });
 
@@ -215,9 +244,16 @@ var Statistics = Backbone.View.extend({
         }
 
         function clear_workspace(args) {
-            if (typeof args.workspace.stats != "undefined") {
+            if (typeof args.workspace.stats != "undefined" && $(args.workspace.stats.el).is(':visible')) {
                 $(args.workspace.stats.el).parents().find('.workspace_results table').show();
                 $(args.workspace.stats.el).hide();
+                
+                args.workspace.stats.data = {};
+                args.workspace.stats.data.resultset = [];
+                args.workspace.stats.data.metadata = [];
+                args.workspace.stats.data.height = 0;
+                args.workspace.stats.data.width = 0;
+
             }
         }
 

@@ -24,13 +24,14 @@ var WorkspaceDropZone = Backbone.View.extend({
     },
     
     events: {
-        'sortbeforestop': 'select_dimension',
+        'sortbeforestop .fields_list_body': 'select_dimension',
         'click .d_dimension span.selections': 'selections',
         'click .d_dimension a': 'selections',
         'click .d_measure a' : 'remove_dimension',
         'click .d_measure span.sort' : 'sort_measure',
         'click .d_dimension span.sort' : 'sort_measure',
-        'click .limit' : 'limit_axis'
+        'click .limit' : 'limit_axis',
+        'click .clear_axis' : 'clear_axis'
     },
     
     initialize: function(args) {
@@ -49,15 +50,12 @@ var WorkspaceDropZone = Backbone.View.extend({
         // Activate drop zones
         $(this.el).find('.connectable').sortable({
             connectWith: $(this.el).find('.connectable'),
-            cursorAt: {
-                top: 10,
-                left: 35
-            },
             forcePlaceholderSize: true,
+            forceHelperSize: true,
             items: '> li',
             opacity: 0.60,
             placeholder: 'placeholder',
-            tolerance: 'pointer',
+            tolerance: 'touch',
             
             start: function(event, ui) {
                 ui.placeholder.text(ui.helper.text());
@@ -76,7 +74,8 @@ var WorkspaceDropZone = Backbone.View.extend({
         if (this.workspace.query.get('type') != 'QM' || Settings.MODE == "view") {
             return false;
         }
-        $axis = $(event.target).siblings('.fields_list_body');
+        $target =  $(event.target).hasClass('limit') ? $(event.target) : $(event.target).parent();
+        $axis = $target.siblings('.fields_list_body');
         var source = "";
         var target = "ROWS";
         if ($axis.hasClass('rows')) { target = "ROWS";  }
@@ -84,11 +83,11 @@ var WorkspaceDropZone = Backbone.View.extend({
         if ($axis.hasClass('filter')) { target = "FILTER";  }
 
 
-        $target =  $(event.target).hasClass('limit') ? $(event.target) : $(event.target).parent();
+        
         $body = $(document);
-        $body.off('.contextMenu .contextMenuAutoHide');
-        $('.context-menu-list').remove();
-        $.contextMenu('destroy');
+        //$body.off('.contextMenu .contextMenuAutoHide');
+        //$('.context-menu-list').remove();
+        $.contextMenu('destroy', '.limit');
         $.contextMenu({
             appendTo: $target,
             selector: '.limit', 
@@ -168,7 +167,7 @@ var WorkspaceDropZone = Backbone.View.extend({
                         "filter" : {name: "Filter", items: 
                          { 
                                 "customfilter": {name: "Custom..." },
-                                "clearfilter": {name: "Clear Filter" },                    
+                                "clearfilter": {name: "Clear Filter" }
                          }},
                         "limit" : {name: "Limit", items: 
                         {
@@ -275,7 +274,7 @@ var WorkspaceDropZone = Backbone.View.extend({
 
                                 var save_customsort = function(sortO, sortL) {
                                     self.set_query_axis_sort(target, sortO, sortL);
-                                    var url = "/axis/" + target + "/sort/" + sortO + "/" + sortL;
+                                    var url = "/axis/" + target + "/sort/" + sortO + "/" + encodeURIComponent(sortL);
                                     self.workspace.query.action.post(url, {
                                         success: self.workspace.query.run
                                     });    
@@ -304,7 +303,7 @@ var WorkspaceDropZone = Backbone.View.extend({
                                 if (_.indexOf(["ASC", "BASC", "DESC", "BDESC"], fun) > -1) {
                                     method = "sort";
                                     self.set_query_axis_sort(target, fun, items[ikey].payload["sortliteral"]);
-                                    fun += "/" +  items[ikey].payload["sortliteral"];
+                                    fun += "/" +  encodeURIComponent(items[ikey].payload["sortliteral"]);
                                 } else {
                                     method = "limit";
                                     self.set_query_axis(target, fun, items[ikey].payload.n , items[ikey].payload["sortliteral"]);
@@ -359,7 +358,8 @@ var WorkspaceDropZone = Backbone.View.extend({
         });
         return false;
     },
-        set_query_axis: function(target, func, n, sortliteral) {
+    
+    set_query_axis: function(target, func, n, sortliteral) {
         var self = this;
         var axes = this.workspace.query.get('axes');
         _.each(axes, function(axis) {
@@ -378,6 +378,34 @@ var WorkspaceDropZone = Backbone.View.extend({
         return false;
     },
 
+    clear_axis: function(event) {
+            var self = this;
+            
+            if (typeof this.workspace.query == "undefined") {
+                return false;
+            }
+            if (this.workspace.query.get('type') != 'QM' || Settings.MODE == "view") {
+                return false;
+            }
+            $target =  $(event.target);
+            $axis = $target.siblings('.fields_list_body');
+            var source = "";
+            var target = "";
+            if ($axis.hasClass('rows')) { target = "ROWS";  }
+            if ($axis.hasClass('columns')) { target = "COLUMNS";  }
+            if ($axis.hasClass('filter')) { target = "FILTER";  }
+
+            var url = "/axis/" + target;
+            self.workspace.query.action.del(url, {
+                success: function(model, response) {
+                    $axis.find('.connectable').empty();
+                    self.workspace.query.parse(response);
+                    self.workspace.sync_query();
+                }
+            });
+            event.preventDefault();
+            return false;
+    },
 
     sort_measure: function(event, ui) {
         $axis = $(event.target).parent().parents('.fields_list_body');
@@ -431,6 +459,27 @@ var WorkspaceDropZone = Backbone.View.extend({
     
     select_dimension: function(event, ui) {
 
+/*
+        $('.workspace_fields').css('height','');
+        var wh = $('.workspace_fields').height();
+        $('.workspace_fields').css('height', wh);
+
+        if ($axis.length == 0) {
+            $axis = $('.workspace_fields .placeholder').parents('.fields_list_body');
+        }
+
+        // total width - fieldslist header + padding 15 - clear icon width
+        var bodyWidth = ww - $axis.siblings('.fields_list_header').width() - 15 - $axis.siblings('.clear_axis').width();
+        $axis.width(bodyWidth);
+
+        var axisHeight = $axis.height() ? $axis.height() : 0;
+        if (axisHeight > 40) {
+            $axis.siblings('.fields_list_header').height($axis.height() - 6);
+        } else {
+            $axis.siblings('.fields_list_header').css('height','');
+        }
+        */
+        
         $axis = ui.item.parents('.fields_list_body');
         var target = "";
         
@@ -460,11 +509,10 @@ var WorkspaceDropZone = Backbone.View.extend({
 
         // Wrap with the appropriate parent element
         if (ui.item.find('a').hasClass('level')) {
-            var $icon = $("<div />").addClass('sprite').addClass('selections');
-            var $icon2 = $("<span />").addClass('sprite').addClass('sort none');
-        
+            var $icon = $("<span />").addClass('sprite selections');
+            var $icon2 = $("<span />").addClass('sprite sort none');
             ui.item.addClass('d_dimension').prepend($icon);
-            ui.item.addClass('d_dimension').prepend($icon2);
+            $icon2.insertBefore($icon);
         } else {
             var $icon = $("<span />").addClass('sort none');
             ui.item.addClass('d_measure').prepend($icon);
@@ -590,10 +638,11 @@ var WorkspaceDropZone = Backbone.View.extend({
         axis.find('.d_dimension a').each( function(index, element) {
             element = $(element);
             if (!element.prev() || (element.prev() && element.prev().length == 0)) {
-                var $icon = $("<span />").addClass('sprite').addClass('selections');
+                var $icon = $("<span />").addClass('sprite sort none');
                 $icon.insertBefore(element);
-                var $icon = $("<span />").addClass('sprite').addClass('sort none');
+                var $icon = $("<span />").addClass('sprite selections');
                 $icon.insertBefore(element);
+
             }
         });
 
@@ -610,6 +659,14 @@ var WorkspaceDropZone = Backbone.View.extend({
 
         $(ui.item).remove();
 
+        $(this.workspace.el).find('.fields_list_body').each(function(index, element) {
+            $axis = $(element);
+            if ($axis.find('li').length == 0) {
+                $axis.siblings('.clear_axis').addClass('hide');
+            } else {
+                $axis.siblings('.clear_axis').removeClass('hide');
+            }
+        });
     },
 
 
@@ -646,6 +703,9 @@ var WorkspaceDropZone = Backbone.View.extend({
         
         // Remove element
         $source.addClass('deleted').remove();
+        if ($target_el.find('li.d_dimension, li.d_measure, li.ui-draggable').length == 0) {
+            $target_el.siblings('.clear_axis').addClass('hide');
+        }
         
         // Prevent workspace from getting this event
         event.stopPropagation();

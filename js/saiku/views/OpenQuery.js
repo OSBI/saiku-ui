@@ -25,13 +25,15 @@ var OpenQuery = Backbone.View.extend({
         'dblclick .query': 'select_and_open_query',
         'click .add_folder' : 'add_folder',
         'click li.folder': 'toggle_folder',
+        'click .workspace_toolbar a.button' : 'prevent_default',
         'click .workspace_toolbar a.open': 'open_query',
         'click .workspace_toolbar [href=#edit_folder]': 'edit_folder',
         'click .workspace_toolbar [href=#delete_folder]': 'delete_folder',
         'click .workspace_toolbar [href=#delete_query]': 'delete_query',
         'click .workspace_toolbar [href=#edit_permissions]': 'edit_permissions',
         'click .queries' : 'click_canvas',
-        'keyup .search_file' : 'search_file'
+        'keyup .search_file' : 'search_file',
+        'click .cancel_search' : 'cancel_search'
     },
     
     template: function() {
@@ -54,19 +56,20 @@ var OpenQuery = Backbone.View.extend({
     render: function() {
         // Load template
         $(this.el).html(this.template());
-        
+
         // Adjust tab when selected
         this.tab.bind('tab:select', this.fetch_queries);
         this.tab.bind('tab:select', this.adjust);
         $(window).resize(this.adjust);
         
+
         return this; 
     },
     
     initialize: function(args) {
         // Maintain `this`
         _.bindAll(this, "adjust", "fetch_queries",
-                "clear_query","select_and_open_query");
+                "clear_query","select_and_open_query", "cancel_search");
         
         // Initialize repository
         this.repository = new Repository({}, { dialog: this });
@@ -95,15 +98,16 @@ var OpenQuery = Backbone.View.extend({
         var filter = $(this.el).find('.search_file').val().toLowerCase();
         var isEmpty = (typeof filter == "undefined" || filter == "" || filter == null);
         if (isEmpty || event.which == 27 || event.which == 9) {
-            $(this.el).find('li.query, li.folder').removeClass('hide');
-            $(this.el).find( '.folder_row' ).find('.sprite').addClass( 'collapsed' );
-            $(this.el).find( 'li.folder .folder_content' ).addClass('hide');
-            $(this.el).find('.search_file').val('');
+            this.cancel_search();
         } else {
-            
+            if ($(this.el).find('.search_file').val()) {
+                $(this.el).find('.cancel_search').show();
+            } else {
+                $(this.el).find('.cancel_search').hide();
+            }
             $(this.el).find('li.query').removeClass('hide')
             $(this.el).find('li.query a').filter(function (index) { 
-                return this.text.toLowerCase().indexOf(filter) == -1; 
+                return $(this).text().toLowerCase().indexOf(filter) == -1; 
             }).parent().addClass('hide');
             $(this.el).find('li.folder').addClass('hide');
             $(this.el).find('li.query').not('.hide').parents('li.folder').removeClass('hide');
@@ -115,7 +119,16 @@ var OpenQuery = Backbone.View.extend({
         }
         return false;
     },
-    
+    cancel_search: function(event) {
+        $(this.el).find('input.search_file').val('');
+        $(this.el).find('.cancel_search').hide();
+        $(this.el).find('li.query, li.folder').removeClass('hide');
+        $(this.el).find( '.folder_row' ).find('.sprite').addClass( 'collapsed' );
+        $(this.el).find( 'li.folder .folder_content' ).addClass('hide');
+        $(this.el).find('.search_file').val('').focus();
+        $(this.el).find('.cancel_search').hide();
+
+    },
     view_query: function(event) {
         event.preventDefault( );
         var $currentTarget = $( event.currentTarget );
@@ -195,6 +208,11 @@ var OpenQuery = Backbone.View.extend({
 
         this.selected_query = new SavedQuery({ file: path , name: name });
 
+    },
+
+    prevent_default: function(event) {
+        event.preventDefault();
+        return false;
     },
 
     add_folder: function( event ) {
@@ -294,7 +312,7 @@ var OpenQuery = Backbone.View.extend({
     edit_permissions: function(event) {
         (new PermissionsModal({
             workspace: this.workspace,
-            title: "Permissions",
+            title: "<span class='i18n'>Permissions</span>",
             file: this.selected_query.get('file')
         })).open();
     },
@@ -309,8 +327,10 @@ var OpenQuery = Backbone.View.extend({
         // Adjust the height of the separator
         $separator = $(this.el).find('.sidebar_separator');
         $separator.height($("body").height() - 87);
-        $(this.el).find('.sidebar').height($("body").height() - 87);
-        
+        $(this.el).find('.sidebar').css( { 'width' : 300,
+                                            'height' : $("body").height() - 87 });
+        $(this.el).find('.workspace_inner').css({ 'margin-left' : 305});
+        $(this.el).find('.workspace').css({ 'margin-left' : -305});
         // Adjust the dimensions of the results window
         $(this.el).find('.workspace_results').css({
             width: $(document).width() - $(this.el).find('.sidebar').width() - 30,

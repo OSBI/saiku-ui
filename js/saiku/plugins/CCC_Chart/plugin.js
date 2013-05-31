@@ -25,6 +25,7 @@ var Chart = Backbone.View.extend({
     },
 
     data: null,
+    hasProcessed: null,
 
     getChartProperties: function(chartName) { 
         var self = this; 
@@ -46,13 +47,15 @@ var Chart = Backbone.View.extend({
         // Create a unique ID for use as the CSS selector
         this.id = _.uniqueId("chart_");
         $(this.el).attr({ id: this.id });
-        this.cccOptions.canvas = this.id;
+        $('<div id="canvas_' + this.id + '"></div>').appendTo($(this.el));
+        this.processing = $('<div id="processing_' + this.id + '"><span class="processing_image">&nbsp;&nbsp;</span> <span class="i18n">Running query...</span></div>');
+        this.cccOptions.canvas = 'canvas_' + this.id;
         this.cccOptions = this.getQuickOptions(this.cccOptions);
 
         this.data = null;
         
         // Bind table rendering to query result event
-        _.bindAll(this, "receive_data", "process_data", "show",  "getData", "render_view", "render_chart", "getQuickOptions","exportChart","block_ui");
+        _.bindAll(this, "receive_data", "process_data", "show",  "getData", "render_view", "render_chart", "render_chart_delayed", "getQuickOptions","exportChart","block_ui");
         var self = this;
         this.workspace.bind('query:run',  function() {
             if (! $(self.workspace.querytoolbar.el).find('.render_chart').hasClass('on')) {
@@ -61,19 +64,25 @@ var Chart = Backbone.View.extend({
             self.data = {};
             self.data.resultset = [];
             self.data.metadata = [];
-            self.render_chart();
+            $(self.el).hide();
+            self.processing.show();
             return false;
         });
 
         this.workspace.bind('query:fetch', this.block_ui);
         
         this.workspace.bind('query:result', this.receive_data);
-        Saiku.session.bind('workspace:new', this.render_view);
-        
-        
-        // Listen to adjust event and rerender chart
-        this.workspace.bind('workspace:adjust', this.render);
-        
+
+         var pseudoForm = "<div style='display:none'><form id='svgChartPseudoForm' target='_blank' method='POST'>" +
+                "<input type='hidden' name='type' class='type'/>" +
+                "<input type='hidden' name='svg' class='svg'/>" +
+                "</form></div>";
+        if (typeof isIE !== "undefined") {
+            pseudoForm = "<div></div>";
+        }
+        this.nav =$(pseudoForm);
+
+        /*
         // Create navigation
         var exportoptions = "<div><a class='hide' href='#charteditor' id='acharteditor' /><!--<a class='editor' href='#chart_editor'>Advanced Properties</a>-->Export to: " +
                 "<a class='export' href='#png' class='i18n'>PNG</a>, " +
@@ -87,7 +96,9 @@ var Chart = Backbone.View.extend({
                 "</form>";
 
         var chartnav = exportoptions + "</div>";
-        
+        if (typeof isIE !== "undefined") {
+            chartnav = "<div></div>";
+        }
         // Create navigation
         this.nav = $(chartnav).css({
         		    'padding-bottom': '10px'
@@ -110,6 +121,7 @@ var Chart = Backbone.View.extend({
                     'border': '1px solid #ccc', 
                     padding: '5px' 
                 });
+        */
         /* XXX - enable again later
         $(this.nav).append('<div style="display:none;"> <div id="charteditor" class="chart_editor"></div></div>');
         
@@ -128,11 +140,10 @@ var Chart = Backbone.View.extend({
         if (! $(this.workspace.querytoolbar.el).find('.render_chart').hasClass('on')) {
             return;
         }
-        Saiku.ui.block("Updating chart data....");
+        //Saiku.ui.block("Updating chart data....");
     },
 
-    exportChart: function(event) {
-        var type = $(event.target).attr('href').replace('#', '');
+    exportChart: function(type) {
         var svgContent = new XMLSerializer().serializeToString($('svg')[0]);
         var rep = '<svg xmlns="http://www.w3.org/2000/svg" ';
         if (svgContent.substr(0,rep.length) != rep) {
@@ -151,7 +162,8 @@ var Chart = Backbone.View.extend({
     	// Append chart to workspace
         $(this.workspace.el).find('.workspace_results')
             .prepend($(this.el).hide())
-            .prepend(this.nav.hide());
+            .prepend(this.nav.hide())
+            .prepend(this.processing.hide());
     },
     
     getData: function() {
@@ -159,8 +171,13 @@ var Chart = Backbone.View.extend({
     },
 
     show: function(event, ui) {
-        $(this.el).show();
-        $(this.nav).show();
+        /*
+        if ('MODE' in Settings && Settings.MODE == 'table') {
+            $(this.nav).hide();    
+        } else {
+            $(this.nav).show();
+        }
+        
         $('a#acharteditor').fancybox(
                                    {
                                    'autoDimensions'    : false,
@@ -172,15 +189,19 @@ var Chart = Backbone.View.extend({
                                    'type'              : 'inline'
                                    }
                                );
-
+        */
         if (this.cccOptions.width <= 0) {
             this.cccOptions.width = $(this.workspace.el).find('.workspace_results').width() - 40;
         }
         if (this.cccOptions.height <= 0) {
             this.cccOptions.height = $(this.workspace.el).find('.workspace_results').height() - 40;
         }
-        this.block_ui();
-        this.process_data({ data: this.workspace.query.result.lastresult() });
+        
+        var hasRun = this.workspace.query.result.hasRun();
+        if (hasRun) {
+            this.process_data({ data: this.workspace.query.result.lastresult() });
+        }
+
     },
 
     chart_editor: function() {
@@ -188,7 +209,48 @@ var Chart = Backbone.View.extend({
 		return true;
     },
 
+    export_button: function(event) {
+        var self = this;
+        $target = $(event.target).hasClass('button') ? $(event.target) : $(event.target).parent();
+        
+        var self = this;
+        $body = $(document);
+        //$body.off('.contextMenu .contextMenuAutoHide');
+        //$('.context-menu-list').remove();
+        $.contextMenu('destroy', '.export_button');
+        $.contextMenu({
+                selector: '.export_button',
+                trigger: 'left',
+                ignoreRightClick: true,
+                callback: function(key, options) {
+                    self.workspace.chart.exportChart(key);
+                },
+                items: {
+                    "png": {name: "PNG"},
+                    "pdf": {name: "PDF"},
+                    "jpg": {name: "JPEG"},
+                    "svg": {name: "SVG"}
+                }
+        });
+        $target.contextMenu();
+    },
+
+    button: function(event) {
+        $target = $(event.target).hasClass('button') ? $(event.target) : $(event.target).parent();
+        if ($target.hasClass('chartoption')) {
+            $target.parent().siblings().find('.chartoption.on').removeClass('on');
+            $target.addClass('on');
+            if ($(this.workspace.querytoolbar.el).find('.render_chart').hasClass('on')) {
+                $(this.el).hide();
+            }
+
+
+        }
+        return false;
+    },
+
     stackedBar: function() {
+        this.workspace.query.setProperty('saiku.ui.render.type', 'stackedBar');
         var options = {
             stacked: true,
             type: "BarChart"
@@ -198,6 +260,7 @@ var Chart = Backbone.View.extend({
     },
     
     bar: function() {
+        this.workspace.query.setProperty('saiku.ui.render.type', 'bar');
         var options = {
             type: "BarChart"
         };
@@ -215,6 +278,7 @@ var Chart = Backbone.View.extend({
     },
 
     multiplebar: function() {
+        this.workspace.query.setProperty('saiku.ui.render.type', 'multiplebar');
         var options = {
             type: "BarChart",
             multiChartIndexes: [1],
@@ -232,6 +296,7 @@ var Chart = Backbone.View.extend({
     },
     
     line: function() {
+        this.workspace.query.setProperty('saiku.ui.render.type', 'line');
         var options = {
             type: "LineChart"
         };
@@ -241,6 +306,7 @@ var Chart = Backbone.View.extend({
     },
     
     pie: function() {
+        this.workspace.query.setProperty('saiku.ui.render.type', 'pie');
         var options = {
             type: "PieChart",
             multiChartIndexes: [0] // ideally this would be chosen by the user (count, which)
@@ -250,6 +316,7 @@ var Chart = Backbone.View.extend({
     },
 
     heatgrid: function() {
+        this.workspace.query.setProperty('saiku.ui.render.type', 'heatgrid');
         var options = {
             type: "HeatGridChart"
         };
@@ -258,6 +325,7 @@ var Chart = Backbone.View.extend({
     },
 
     stackedBar100: function() {
+        this.workspace.query.setProperty('saiku.ui.render.type', 'stackedBar100');
         var options = {
             type: "NormalizedBarChart"
         };
@@ -266,6 +334,7 @@ var Chart = Backbone.View.extend({
     },
 
     area: function() {
+        this.workspace.query.setProperty('saiku.ui.render.type', 'area');
         var options = {
             type: "StackedAreaChart"
         };
@@ -273,6 +342,7 @@ var Chart = Backbone.View.extend({
         this.render_chart();
     },
     dot: function() {
+        this.workspace.query.setProperty('saiku.ui.render.type', 'dot');
         var options = {
             type: "DotChart"
         };
@@ -280,6 +350,7 @@ var Chart = Backbone.View.extend({
         this.render_chart();
     },
     waterfall: function() {
+        this.workspace.query.setProperty('saiku.ui.render.type', 'waterfall');
         var options = {
             type: "WaterfallChart"
         };
@@ -300,7 +371,18 @@ var Chart = Backbone.View.extend({
             axisSizeMax: "40%",
             plotFrameVisible : false,
             orthoAxisMinorTicks : false,
-            colors: ["#4bb2c5", "#c5b47f", "#EAA228", "#579575", "#839557", "#958c12", "#953579", "#4b5de4", "#d8b83f", "#ff5800", "#0085cc"]
+            colors: ["#1f77b4", "#aec7e8", "#ff7f0e", "#ffbb78", "#2ca02c", "#98df8a", "#d62728", "#ff9896", "#9467bd", "#c5b0d5", "#8c564b", "#c49c94", "#e377c2", "#f7b6d2", "#7f7f7f", "#c7c7c7", "#bcbd22", "#dbdb8d", "#17becf", "#9edae5" ]
+/*
+"#B12623",
+"#ff8585",
+"#009bff",
+"#1f77b4",
+"#ff5900",
+"#ffbb9e",
+"#750000",
+"#cecece",
+ "#aec7e8", "#ff7f0e", "#ffbb78", "#2ca02c", "#98df8a", "#d62728", "#ff9896", "#9467bd", "#c5b0d5", "#8c564b", "#c49c94", "#e377c2", "#f7b6d2", "#7f7f7f", "#c7c7c7", "#bcbd22", "#dbdb8d", "#17becf", "#9edae5" ]
+ */
         },
         
         HeatGridChart: {
@@ -327,9 +409,15 @@ var Chart = Backbone.View.extend({
             multiChartMax: 30,
             smallTitleFont: "bold 14px sans-serif",
             valuesVisible: true,
-            explodedSliceRadius: '5%',
+            valuesMask: "{value.percent}",
             extensionPoints: {
                 slice_innerRadiusEx: '40%'
+            },
+            clickable: true,
+            clickAction: function(scene) {
+                this.chart.root.options.explodedSliceIndex = this.index;
+                this.chart.root.options.explodedSliceRadius = '10%';
+                this.chart.root.render(true, true, false);
             }
             //valuesLabelStyle: 'inside'
         },
@@ -352,12 +440,11 @@ var Chart = Backbone.View.extend({
     getQuickOptions: function(baseOptions) {
         var chartType = (baseOptions && baseOptions.type) || "BarChart";
         var workspaceResults = $(this.workspace.el).find(".workspace_results");
-        
         var options = _.extend({
                 type:   chartType,
-                canvas: this.id,
+                canvas: 'canvas_' + this.id,
                 width:  workspaceResults.width() - 40,
-                height: workspaceResults.height() - 40,
+                height: workspaceResults.height() - 40
             },
             this.cccOptionsDefault.Base,
             this.cccOptionsDefault[chartType], // may be undefined
@@ -378,11 +465,41 @@ var Chart = Backbone.View.extend({
         
         return options;
     },
-    
+
     render_chart: function() {
-        if (! $(this.workspace.querytoolbar.el).find('.render_chart').hasClass('on')) {
+        _.delay(this.render_chart_delayed, 0, this);
+        return false; 
+    },
+    
+    render_chart_delayed: function() {
+        if (!$(this.workspace.querytoolbar.el).find('.render_chart').hasClass('on') || !this.hasProcessed) {
             return;
         }
+/* DEBUGGING
+this.med = new Date().getTime();
+$(this.el).prepend(" | chart render (" + (this.med - this.call_time) + ")" );
+this.call_time = undefined;
+*/
+        var workspaceResults = $(this.workspace.el).find(".workspace_results");
+        var isSmall = (this.data != null && this.data.height < 80 && this.data.width < 80);
+        var isMedium = (this.data != null && this.data.height < 300 && this.data.width < 300);
+        var isBig = (!isSmall && !isMedium);
+        var animate = false;
+        var hoverable =  isSmall;
+
+        var runtimeChartDefinition = _.clone(this.cccOptions);
+         if (isBig) {
+            if (runtimeChartDefinition.hasOwnProperty('extensionPoints') && runtimeChartDefinition.extensionPoints.hasOwnProperty('line_interpolate'))
+                delete runtimeChartDefinition.extensionPoints.line_interpolate;
+            if (runtimeChartDefinition.hasOwnProperty('extensionPoints') && runtimeChartDefinition.extensionPoints.hasOwnProperty('area_interpolate'))
+                delete runtimeChartDefinition.extensionPoints.area_interpolate;
+         }
+         runtimeChartDefinition = _.extend(runtimeChartDefinition, {
+                width:  workspaceResults.width() - 40,
+                height: workspaceResults.height() - 40,
+                hoverable: hoverable,
+                animate: animate
+        });
 
         /* XXX - enable later
         var start = new Date().getTime();
@@ -391,23 +508,39 @@ var Chart = Backbone.View.extend({
         this.editor.render_chart_properties("pvc." + this.cccOptions.type, this.editor.chartDefinition);
         */
 
-        this.chart = new pvc[this.cccOptions.type](this.cccOptions);
-        
+        this.chart = new pvc[runtimeChartDefinition.type](runtimeChartDefinition);
+/* DEBUGGING
+this.med3 = new Date().getTime();
+$(this.el).prepend(" pvc (" + (this.med3 - this.med) + ")" );
+*/
+
         this.chart.setData(this.data, {
             crosstabMode: true,
             seriesInRows: false
         });
-        
+
         try {
+            if (animate) {
+                $(this.el).show();
+            }
             this.chart.render();
-            Saiku.i18n.automatic_i18n();
+/* DEBUGGING
+            var med2 = new Date().getTime();
+            $(this.el).prepend(" done (" + (med2 - this.med) + ")" );
+*/
         } catch (e) {
             $(this.el).text("Could not render chart");
         }
-        Saiku.ui.unblock();
-        //var end = new Date().getTime();
-        //console.log("Duration: " + (end - start));
-
+        this.processing.hide();
+        if (animate) {
+            return false;
+        }
+        if (isIE || isBig) {
+            $(this.el).show();
+        } else {
+            $(this.el).fadeIn(600);
+        }
+        return false;
     },
             
     receive_data: function(args) {
@@ -426,12 +559,15 @@ var Chart = Backbone.View.extend({
         this.data.width = 0;
 
         if (typeof args.data == "undefined" || args.data == null || args.data.cellset == null ) {
-            Saiku.ui.unblock();
             return false;
         }
         var cellset = args.data.cellset;
         if (cellset && cellset.length > 0) {
-            
+/* DEBUGGING
+var start = new Date().getTime();
+this.call_time = start;
+$(this.el).prepend(" | chart process");
+*/
             var lowest_level = 0;
             var data_start = 0;
             for (var row = 0; data_start == 0 && row < cellset.length; row++) {
@@ -516,13 +652,14 @@ var Chart = Backbone.View.extend({
                 }
             }
             //makeSureUniqueLabels(this.data.resultset);
+            this.hasProcessed = true;
             this.data.height = this.data.resultset.length;
             this.cccOptions = this.getQuickOptions(this.cccOptions);
             this.render_chart();
         } else {
             $(this.el).text("No results");
+            this.processing.hide();
         }
-        Saiku.ui.unblock();
     }
 });
 

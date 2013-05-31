@@ -31,7 +31,8 @@ var Settings = {
         'saiku.olap.query.automatic_execution': 'true',
         'saiku.olap.query.nonempty': 'true',
         'saiku.olap.query.nonempty.rows': 'true',
-        'saiku.olap.query.nonempty.columns': 'true'
+        'saiku.olap.query.nonempty.columns': 'true',
+        'saiku.ui.render.mode' : 'table'
     },
     /* Valid values for CELLSET_FORMATTER:
      * 1) flattened
@@ -75,6 +76,14 @@ _.extend(Settings, Settings.GET);
 Settings.REST_URL = Settings.BASE_URL
     + Settings.TOMCAT_WEBAPP 
     + Settings.REST_MOUNT_POINT;
+
+// lets assume we dont need a min width/height for table mode
+if (Settings.MODE == "table") {
+    Settings.DIMENSION_PREFETCH = false;
+    $('body, html').css('min-height',0);
+    $('body, html').css('min-width',0);
+
+}
 
 
 /**
@@ -121,3 +130,14 @@ if (window.location.hostname && (window.location.hostname == "dev.analytical-lab
     Settings.USERNAME = "admin";
     Settings.PASSWORD = "admin";
 }
+
+var isIE = (function(){
+    var undef, v = 3, div = document.createElement('div');
+
+    while (
+        div.innerHTML = '<!--[if gt IE '+(++v)+']><i></i><![endif]-->',
+        div.getElementsByTagName('i')[0]
+    );
+
+    return v> 4 ? v : false;
+}());

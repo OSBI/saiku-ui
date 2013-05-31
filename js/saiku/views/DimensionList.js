@@ -56,17 +56,40 @@ var DimensionList = Backbone.View.extend({
     
     render: function() {
         // Pull the HTML from cache and hide all dimensions
-        $(this.el).html(this.template)
-            .find('.hide').hide().removeClass('hide');
+        var self = this;
+        $(this.el).hide().html(this.template);
+        if (isIE && isIE <= 8) {
+            $(this.el).show();
+        } else {
+            $(this.el).fadeTo(500,1);
+        }
         
         // Add draggable behavior
+        $(this.el).find('.measure,.level').parent('li').mousedown(function(event, ui) {
+            event.preventDefault();
+            if ($(event.target).parent().hasClass('ui-state-disabled')) {
+                return;
+            }
+            if (self.workspace.query.get('type') == "QM") {
+                if ( $(self.workspace.toolbar.el).find('.toggle_fields').hasClass('on') && $(self.workspace.el).find('.workspace_editor').is(':hidden')) {
+                    self.workspace.toolbar.toggle_fields();
+                }
+            }
+        });
         $(this.el).find('.measure,.level').parent('li').draggable({
             cancel: '.not-draggable, .hierarchy',
             connectToSortable: $(this.workspace.el)
                 .find('.columns > ul, .rows > ul, .filter > ul'),
             helper: 'clone',
             opacity: 0.60,
-            tolerance: 'pointer',
+            tolerance: 'touch',
+            stop: function() {
+                if (self.workspace.query.get('type') == "QM") {
+                    if ( $(self.workspace.toolbar.el).find('.toggle_fields').hasClass('on')) {
+                        self.workspace.toolbar.toggle_fields();
+                    }
+                }
+            },
             cursorAt: {
                 top: 10,
                 left: 35
@@ -87,7 +110,12 @@ var DimensionList = Backbone.View.extend({
     },
 
      select_dimension: function(event, ui) {
+        if (this.workspace.query.get('type') != "QM") {
+            return;
+        }
         if ($(event.target).parent().hasClass('ui-state-disabled')) {
+            event.preventDefault();
+            event.stopPropagation();
             return;
         }
         
@@ -108,6 +136,11 @@ var DimensionList = Backbone.View.extend({
         }, {
             item: $target
         });
+
+        if ( $(this.workspace.toolbar.el).find('.toggle_fields').hasClass('on')) {
+            $(this.workspace.el).find('.workspace_editor').delay(2000).slideUp({ complete: this.workspace.adjust });
+        }
+        event.preventDefault();
         return false;
     },
 
@@ -133,6 +166,11 @@ var DimensionList = Backbone.View.extend({
         }, {
             item: $target
         });
+
+        if ( $(this.workspace.toolbar.el).find('.toggle_fields').hasClass('on')) {
+            $(this.workspace.el).find('.workspace_editor').delay(2000).slideUp({ complete: this.workspace.adjust });
+        }
+        event.preventDefault();
         return false;
     }
 });

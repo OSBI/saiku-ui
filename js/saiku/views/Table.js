@@ -37,7 +37,7 @@ var Table = Backbone.View.extend({
     clicked_cell: function(event) {
         var self = this;
         
-        if (this.workspace.query.get('type') != 'QM' || Settings.MODE == "view") {
+        if (this.workspace.query.get('type') != 'QM' || Settings.MODE == "table") {
             return false;
         }
 
@@ -45,9 +45,9 @@ var Table = Backbone.View.extend({
             $(event.target).find('div') : $(event.target);
         
     $body = $(document);
-    $body.off('.contextMenu .contextMenuAutoHide');
-    $('.context-menu-list').remove();
-    $.contextMenu('destroy');
+    //$body.off('.contextMenu .contextMenuAutoHide');
+    //$('.context-menu-list').remove();
+    $.contextMenu('destroy', '.row, .col');
     $.contextMenu({
         appendTo: $target,
         selector: '.row, .col', 
@@ -91,6 +91,10 @@ var Table = Backbone.View.extend({
             var levels = [];
             var items = {};
             var dimensions = Saiku.session.sessionworkspace.dimensions[cube].get('data');
+            if (typeof dimensions == "undefined") {
+                Saiku.session.sessionworkspace.dimensions[cube].fetch({async : false});
+                dimensions = Saiku.session.sessionworkspace.dimensions[cube].get('data');
+            }
             var dimsel = {};
             var used_levels = [];
 
@@ -187,34 +191,10 @@ var Table = Backbone.View.extend({
                         url = '/axis/' + axis + '/dimension/' + d + "/children";
                         children = true;
                     }
-                    self.workspace.query.action.put(url, { 
-                        success: function() {
-                            var formatter = children ?
-                                    "flat" :
-                                    self.workspace.query.get('formatter');
-                            self.workspace.query.clear();
-                            self.workspace.query.set({ 'formatter' : formatter });
-                            self.workspace.query.fetch({ success: function() {
-                                
-                                $(self.workspace.el).find('.fields_list_body ul').empty();
-                                $(self.workspace.dimension_list.el).find('.parent_dimension a.folder_collapsed').removeAttr('style');
-                                
-                                $(self.workspace.dimension_list.el).find('.parent_dimension ul li')
-                                    .draggable('enable')
-                                    .css({ fontWeight: 'normal' });
-
-                                $(self.workspace.measure_list.el).find('a.measure').parent()
-                                    .draggable('enable')
-                                    .css({ fontWeight: 'normal' });
-
-                                self.workspace.populate_selections(self.workspace.measure_list.el);
-                                $(self.workspace.el).find('.fields_list_body ul li')
-                                    .removeClass('ui-draggable-disabled ui-state-disabled')
-                                    .css({ fontWeight: 'normal' });
-
-                             }});
-
-                        },
+                    if (children) {
+                        self.workspace.query.set({ 'formatter' : 'flat' });
+                    }
+                    self.workspace.query.action.put(url, { success: self.workspace.sync_query,
                         data: children ?
                             {
                                 member: items[key].payload
@@ -270,6 +250,7 @@ var info = '<b><span class="i18n">Info:</span></b> &nbsp;' + cdate
                 + "&nbsp; / &nbsp;" + runtime + "s";
         $(this.workspace.el).find(".workspace_results_info")
             .html(info);
+        this.workspace.adjust();
         //Saiku.i18n.translate();
         $(this.el).html('<tr><td>Rendering ' + args.data.width + ' columns and ' + args.data.height + ' rows...</td></tr>');
 
@@ -421,7 +402,7 @@ var info = '<b><span class="i18n">Info:</span></b> &nbsp;' + cdate
         if (this.workspace.query.get('type') == 'QM' && Settings.MODE != "view") {
             $(this.el).find('th.row, th.col').addClass('headerhighlight');
         }
-        Saiku.events.trigger('table:rendered', this);
+        this.workspace.trigger('table:rendered', this);
     },
 
     cancel: function(event) {
@@ -429,11 +410,10 @@ var info = '<b><span class="i18n">Info:</span></b> &nbsp;' + cdate
     },
     
     cancelled: function(args) {
-        $(this.el).html('<tr><td>No results</td></tr>');
+        $(this.el).html('<tr><td><span class="processing_image">&nbsp;&nbsp;</span> <span class="i18n">Canceling Query...</span> </td></tr>');
     },
 
     no_results: function(args) {
-        $(this.el).html('<tr><td>No results</td></tr>');
     },
     
     error: function(args) {
