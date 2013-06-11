@@ -123,8 +123,8 @@ var SelectionsModal = Modal.extend({
             var selected_members_opts = "";
             for (var j = 0; j < this.selected_members.length; j++) {
                 var member = this.selected_members[j];
-                if (encodeURIComponent(member.levelUniqueName) == this.member.level &&
-                    member.type == "MEMBER") {
+                if (member.levelUniqueName == this.member.level &&
+                        member.type == "MEMBER") {
                     selected_members_opts += '<option value="' + encodeURIComponent(member.uniqueName) + '">' + member.caption + "</option>";
                     used_members.push(member.caption);
                 }
