@@ -93,6 +93,7 @@ var SaveQuery = Modal.extend({
     },
 
     populate: function( repository ) {
+        this.folderStructure = repository;
         $( this.el ).find( '.RepositoryObjects' ).html(
             _.template( $( '#template-repository-objects' ).html( ) )( {
                 repoObjects: repository
@@ -204,20 +205,26 @@ var SaveQuery = Modal.extend({
         */
         
         var name = $(this.el).find('input[name="name"]').val();
-        if (name != null && name.length > 0) {
+        var fname = name.substring(name.lastIndexOf('/') + 1);
+        if (fname == null || fname.length === 0) {
+            alert("You need to enter a name!");
+        } else if (name.indexOf('/') < 0) {
+            alert("You must save the file under a folder!");
+        } else if (!this._doesFolderExist(
+                name.substring(0, name.lastIndexOf('/')))) {
+            alert("The folder specified does not exist!");
+        } else {
             this.query.set({ name: name, folder: foldername });
             this.query.trigger('query:save');
             this.query.action.get("/xml", {
                 success: this.copy_to_repository
             });
-        } else {
-            alert("You need to enter a name!");
         }
-        
+
         event.preventDefault();
         return false;
     },
-    
+
     copy_to_repository: function(model, response) {
         var self = this;
         var folder = this.query.get('folder');
@@ -238,5 +245,36 @@ var SaveQuery = Modal.extend({
             file: file,
             content: response.xml
         })).save({},{ success:  this.close, error: error  });
+    },
+
+    _doesFolderExist: function(path) {
+        /** Returns true if the folder specified by path exists (the path
+            passed should not be terminated with a slash, but only contain
+            slashes in the middle of the path to show hierarchy).
+            Returns false if the folder does not exist in the remote file
+            system.
+            */
+        var folder = path.split('/');
+        var folderI = 0;
+        var folderIPath = [];
+        var folderMembers = this.folderStructure;
+        while (folderI < folder.length) {
+            var hasMatch = false;
+            for (var i = 0, m = folderMembers.length; i < m; i++) {
+                var expectedPath = folderIPath.concat(folder[folderI])
+                        .join('/');
+                if (folderMembers[i].path === expectedPath) {
+                    hasMatch = true;
+                    folderIPath.push(folder[folderI]);
+                    folderI += 1;
+                    folderMembers = folderMembers[i].repoObjects;
+                    break;
+                }
+            }
+            if (!hasMatch) {
+                return false;
+            }
+        }
+        return true;
     }
 });
