@@ -319,7 +319,13 @@ var WorkspaceToolbar = Backbone.View.extend({
     },
 
     swap_axes_on_dropzones: function(response, model) {
-        this.workspace.query.parse(response);
+        var needsSync = undefined;
+        if (response !== "OK") {
+            this.workspace.query.parse(response);
+        }
+        else {
+            needsSync = true;
+        }
         /*
         $columns = $(this.workspace.drop_zones.el).find('.columns')
             .children()
@@ -341,7 +347,7 @@ var WorkspaceToolbar = Backbone.View.extend({
             $(this.workspace).find('fields_list.ROWS .limit').addClass('on');
         }
         */
-        this.workspace.sync_query();
+        this.workspace.sync_query(needsSync);
         Saiku.ui.unblock();
     },
     
