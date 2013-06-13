@@ -236,6 +236,8 @@ var SaveQuery = Modal.extend({
                     alert(textStatus.responseText);
                 } else {
                     self.close();
+                    alert("Failed to save; server error.  "
+                            + "Perhaps you don't have permissions?");
                 }
                 return true;
         };
