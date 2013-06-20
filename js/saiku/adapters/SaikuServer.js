@@ -155,7 +155,7 @@ Backbone.sync = function(method, model, options) {
 
     // For older servers, emulate HTTP by mimicking the HTTP method with `_method`
     // And an `X-HTTP-Method-Override` header.
-    if (Settings.BIPLUGIN || Backbone.emulateHTTP) {
+    if ((Settings.INTEGRATION == "pentaho") || Backbone.emulateHTTP) {
       if (type === 'PUT' || type === 'DELETE') {
         if (Backbone.emulateHTTP) params.data._method = type;
         params.type = 'POST';

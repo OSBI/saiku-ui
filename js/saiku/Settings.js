@@ -19,7 +19,7 @@
  */
 var Settings = {
     VERSION: "Saiku 2.5-SNAPSHOT",
-    BIPLUGIN: false,
+    INTEGRATION: "standalone", // standalone, pentaho, stripped
     BASE_URL: "",
     TOMCAT_WEBAPP: "/saiku",
     REST_MOUNT_POINT: "/rest/saiku/",

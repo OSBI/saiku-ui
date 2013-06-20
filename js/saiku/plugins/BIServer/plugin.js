@@ -88,15 +88,13 @@ var savePg0 = function() {};
 /**
  * Manually start session
  */
-if (Settings.BIPLUGIN) {
-    Settings.PLUGIN = true;
+if (Settings.INTEGRATION == "pentaho") {
     Settings.REST_URL = "../saiku/";
-
 
     $(document).ready(function() {
         Saiku.session = new Session();
         
-        $.getScript(Settings.REST_URL + Saiku.session.username + "/plugin/plugins");        
+        $.getScript(Settings.REST_URL + Saiku.session.username + "/plugin/plugins"); 
     });
 }
 
@@ -136,11 +134,42 @@ var BIPlugin = {
     }
 };
 
+var Stripper = {
+    strip_view: function(workspace) {
+        // If in view mode, remove sidebar and drop zones
+        if (Settings.MODE == "view" || Settings.MODE == "table") {
+            workspace.toggle_sidebar();
+            $(workspace.el).find('.sidebar_separator').remove();
+            $(workspace.el).find('.workspace_inner')
+                .css({ 'margin-left': 0 });
+            $(workspace.el).find('.workspace_fields').remove();
+        }
+
+        // Remove toolbar buttons
+        $(workspace.toolbar.el).find('.run').parent().removeClass('seperator');
+        if (Settings.MODE == "view" || Settings.MODE == "table") {
+            $(workspace.toolbar.el)
+                .find(".run, .auto, .toggle_fields, .toggle_sidebar")
+                .parent().remove();
+        }
+        if (Settings.MODE == "table") {
+            $(workspace.toolbar.el).parent().remove();
+        }
+
+        // Toggle save button
+//        workspace.bind('query:result', function(args) {
+//            var isAllowed = args.data.cellset &&
+//                args.data.cellset.length > 0;
+//            puc.allowSave(isAllowed);
+//        });
+    }
+};
+
 /**
  * If plugin active, customize chrome
  */
 Saiku.events.bind('session:new', function(session) {
-    if (Settings.PLUGIN) {        
+    if (Settings.INTEGRATION == "pentaho") {
         // Remove tabs and global toolbar
         $('#header').remove();
 
@@ -151,6 +180,19 @@ Saiku.events.bind('session:new', function(session) {
 
         Saiku.session.bind('workspace:new', function(args) {
             BIPlugin.bind_callbacks(args.workspace);
+        });
+    }
+    if (Settings.INTEGRATION == "stripped"){
+        // Remove tabs and global toolbar
+        $('#header').remove();
+
+        // Bind to workspace
+        if (Saiku.tabs._tabs[0] && Saiku.tabs._tabs[0].content) {
+            Stripper.strip_view(Saiku.tabs._tabs[0].content);
+        }
+
+        Saiku.session.bind('workspace:new', function(args) {
+            Stripper.strip_view(args.workspace);
         });
     }
 });
@@ -176,7 +218,7 @@ var Datasources = Backbone.Model.extend({
 });
 
 
-if (Settings.PLUGIN) {
+if (Settings.INTEGRATION == "pentaho") {
     window.parent.getSaikuMdx = function() {
             var myself = this;
             var query = Saiku.tabs._tabs[0].content.query;
