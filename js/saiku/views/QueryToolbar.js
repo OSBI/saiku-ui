@@ -54,6 +54,9 @@ var QueryToolbar = Backbone.View.extend({
             if (!args.data) {
                 $(this.el).find('a.export_button, a.stats').addClass('disabled_toolbar');
             }
+            if (isIE) {
+                $(this.el).find('a.export_button').addClass('disabled_toolbar');
+            }
         }      
 
     },
@@ -105,14 +108,14 @@ var QueryToolbar = Backbone.View.extend({
             $(this.el).find('ul.table').hide();
             this.render_mode = "chart";
             $(this.workspace.el).find('.workspace_results').children().hide();
+            $(this.workspace.chart.el).children().hide();
             this.workspace.chart.show();
         } else {
             $(this.el).find('ul.chart').hide();
             $(this.el).find('ul.table').show();
             $(this.el).find('ul.table .stats').removeClass('on');
             $(this.workspace.el).find('.workspace_results table').show();
-            $(this.workspace.chart.el).hide();
-            $(this.workspace.chart.nav).hide();
+            $(this.workspace.chart.el).hide().children().hide();
             this.render_mode = "table";
             var hasRun = this.workspace.query.result.hasRun();
             if (hasRun) {
