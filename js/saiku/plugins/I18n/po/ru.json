@@ -176,5 +176,6 @@
     "Add": "Добавить",
     "Remove permission": "Удалить разрешение",
     "You need to chose at least one ACL method for this role.": "Вам нужно выбрать хотя бы один метод для данной роли.",
-    "Fetching members...": "Загрузка..."
+    "Fetching members...": "Загрузка...",
+    "Save Tag": "Сохранить метку"
 }

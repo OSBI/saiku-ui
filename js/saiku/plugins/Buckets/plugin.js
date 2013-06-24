@@ -185,6 +185,8 @@ var Buckets = Backbone.View.extend({
 
         $(self.workspace.el).find("td.data").addClass('cellhighlight').unbind('click').click(clicked);
         $(self.workspace.el).find(".query_scenario, .drillthrough, .drillthrough_export").removeClass('on');
+
+        Saiku.i18n.translate();
     },
 
     save_bucket: function() {
