@@ -339,6 +339,7 @@ var Workspace = Backbone.View.extend({
             this.query.run(true);
         }
 
+        Saiku.i18n.translate();
 
     },
 
@@ -583,6 +584,7 @@ var Workspace = Backbone.View.extend({
 
         $(this.el).find(".workspace_results_info").html(info);
         this.adjust();
+        Saiku.i18n.translate();
         return;
     },
 

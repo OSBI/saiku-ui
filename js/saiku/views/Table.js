@@ -251,6 +251,8 @@ var Table = Backbone.View.extend({
             _.delay(this.process_data, 0, args.data.cellset);
         }
 
+        Saiku.i18n.translate();
+
     },
 
     process_data: function(data) {
