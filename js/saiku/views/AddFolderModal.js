@@ -36,13 +36,12 @@ var AddFolderModal = Modal.extend({
         this.success = args.success;
         this.path = args.path;
         this.message = "<form id='add_folder'>" +
-            "<label for='name'>To add a new folder, " + 
-            "please type a name in the text box below:</label><br />" +
+            "<label for='name'><span class='i18n'>To add a new folder, please type a name in the text box below:</span></label><br />" +
             "<input type='text' class='newfolder' name='name'" +
             "</form>"
 
         _.extend(this.options, {
-            title: "Add Folder"
+            title: "<span class='i18n'>Add Folder</span>"
         });
 
         
@@ -72,7 +71,7 @@ var AddFolderModal = Modal.extend({
 
     error: function() {
         $(this.el).find('dialog_body')
-            .html("Could not add new folder");
+            .html("<span class='i18n'>Could not add new folder</span>");
     }
 
 

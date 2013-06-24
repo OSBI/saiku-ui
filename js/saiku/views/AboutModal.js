@@ -20,7 +20,7 @@
 var AboutModal = Modal.extend({
     initialize: function() {
         _.extend(this.options, {
-            title: "About " + Settings.VERSION
+            title: "<span class='i18n'>About</span> " + Settings.VERSION
         });
     },
 
@@ -34,5 +34,5 @@ var AboutModal = Modal.extend({
     
     message: Settings.VERSION + "<br>" + 
         "<a  target='_blank' href='http://www.analytical-labs.com'>http://www.analytical-labs.com/</a><br><br>"
-        + "Powered by <img width='20px' src='/images/src/meteorite_free.png'  /> <a target='_blank' href='http://meteorite.bi'>http://meteorite.bi/</a> "
+        + "<span class='i18n'>Powered by</span> <img width='20px' src='/images/src/meteorite_free.png'  /> <a target='_blank' href='http://meteorite.bi'>http://meteorite.bi/</a> "
 });

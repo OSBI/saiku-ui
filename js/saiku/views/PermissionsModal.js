@@ -107,7 +107,7 @@ var PermissionsModal = Modal.extend({
                 $("<option value='" + role + "'>" + role + " ["+aclstring+"]</option>").appendTo($(this.el).find(".select_roles"));
                 var role = $(this.el).find(".filterbox").val("");
             } else {
-                alert("You need to chose at least one ACL method for this role.");
+                alert(Saiku.i18n.get_translated("You need to chose at least one ACL method for this role."));
             }
         }
         

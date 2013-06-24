@@ -36,14 +36,19 @@ var CustomFilterModal = Modal.extend({
 
     message: "<form id='custom_filter'>"
                      + "<table border='0px'>"
-                     + "<tr><td class='col0'>Define Filter:</td>"
-                     + "<td class='col1'><select class='function'><option>Select a Function...</option><option value='TopCount'>TopCount</option>"
-                        + "<option value='TopPercent'>TopPercent</option><option value='TopSum'>TopSum</option>"
-                        + "<option value='BottomCount'>BottomCount</option><option value='BottomPercent'>BottomPercent</option>"
-                        + "<option value='BottomSum'>BottomSum</option></select></td></tr>"
+                     + "<tr><td class='col0'><span class='i18n'>Define Filter:</span></td>"
+                     + "<td class='col1'><select class='function'><option class='i18n' label='Select a Function...'>Select a Function...</option>"
+                     + "<option value='TopCount' class='i18n' label='TopCount'>TopCount</option>"
+                        + "<option value='TopPercent' class='i18n' label='TopPercent'>TopPercent</option>"
+                        + "<option value='TopSum' class='i18n' label='TopSum'>TopSum</option>"
+                        + "<option value='BottomCount' class='i18n' label='BottomCount'>BottomCount</option>"
+                        + "<option value='BottomPercent' class='i18n' label='BottomPercent'>BottomPercent</option>"
+                        + "<option value='BottomSum' class='i18n' label='BottomSum'>BottomSum</option></select></td></tr>"
                      + "<tr class='filter_details hide'><td><span class='ntype'></span></td><td><input class='n' /></td></tr>"
-                     + "<tr class='filter_details hide'><td>Sort by:</td>"
-                     + "<td><select class='type'><option value='measure'>Measure</option><option value='custom'>MDX Expression</option></select></td></tr>"
+                     + "<tr class='filter_details hide'><td><span class='i18n'>Sort by:</span></td>"
+                     + "<td><select class='type'>"
+                            + "<option value='measure' class='i18n' label='Measure'>Measure</option>"
+                            + "<option value='custom' class='i18n' label='MDX Expression'>MDX Expression</option></select></td></tr>"
                      + "<tr class='filter_details hide'><td>&nbsp;</td><td class='sortingoption'>&nbsp;</td>"
                      + "</table></form>",
 
@@ -69,7 +74,7 @@ var CustomFilterModal = Modal.extend({
         this.measure_list = this.build_measures_list();
 
         _.extend(this.options, {
-            title: "Custom Filter for " + this.axis
+            title: "<span class='i18n'>Custom Filter for " + this.axis + "</span>"
         });
 
         this.bind( 'open', function( ) {
@@ -116,8 +121,9 @@ var CustomFilterModal = Modal.extend({
         if (typeof val == "undefined" || val == "") {
             $(this.el).find('.filter_details').hide();
         } else {
-            var ntype = val.replace('Top','').replace('Bottom','');
-            $(this.el).find('.ntype').html(ntype + ":")
+            var ntype = Saiku.i18n.get_translated(val.replace('Top','').replace('Bottom',''));
+            $(this.el).find('.ntype').html(ntype + ":");
+            $(this.el).find('.ntype').addClass('i18n');
             $(this.el).find('.filter_details').show();
             $(this.el).find('.sortingoption').html('').html(this.measure_list);
         }
@@ -146,10 +152,10 @@ var CustomFilterModal = Modal.extend({
 
         var alert_msg = "";
         if (typeof this.n == "undefined" || !this.n) {
-            alert_msg += "You have to enter a numeric for N! ";
+            alert_msg += Saiku.i18n.get_translated("You have to enter a numeric for N!");
         }
         if (typeof this.sortliteral == "undefined" || !this.sortliteral || this.sortliteral == "") {
-            alert_msg += "You have to enter a MDX expression for the sort literal! ";
+            alert_msg += Saiku.i18n.get_translated("You have to enter a MDX expression for the sort literal!");
         }
         if (alert_msg != "") {
             alert(alert_msg);
@@ -163,7 +169,7 @@ var CustomFilterModal = Modal.extend({
 
     error: function() {
         $(this.el).find('dialog_body')
-            .html("Could not add new folder");
+            .html("<span class='i18n'>Could not add new folder</span>");
     }
 
 

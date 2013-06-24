@@ -145,8 +145,9 @@ var Buckets = Backbone.View.extend({
         
         var rendered = this.tags_template();
         var $table = $(rendered);
-        $(this.el).append($table)
-        
+        $(this.el).append($table);
+
+        Saiku.i18n.translate();
     },
 
     deactivate_add_bucket: function() {

@@ -260,7 +260,7 @@
 
         <script type="text/x-jquery-tmpl" id="template-workspace-dropzones">
         <div class="workspace_fields disabled">
-            <div class="fields_list" title="COLUMNS">
+            <div class="fields_list i18n" title="COLUMNS">
                 <div class="fields_list_header disabled_toolbar"><span class="i18n">Columns</span><span class="dropdown"></span></div>
                 <div class="fields_list_body columns">
                     <ul class="connectable"></ul>
@@ -268,7 +268,7 @@
                 <span class="clear_axis i18n hide" title="Clear Axis"></span>
                 <div class="clear"></div>
             </div>
-            <div class="fields_list" title="ROWS">
+            <div class="fields_list i18n" title="ROWS">
                 <div class="fields_list_header disabled_toolbar"><span class="i18n">Rows</span><span class="dropdown"></span></div>
                 <div class="fields_list_body rows">
                     <ul class="connectable"></ul>
@@ -276,7 +276,7 @@
                 <span class="clear_axis i18n hide" title="Clear Axis"></span>
                 <div class="clear"></div>
             </div>
-            <div class="fields_list" title="FILTER">
+            <div class="fields_list i18n" title="FILTER">
                 <div class="fields_list_header disabled_toolbar"><span class="i18n">Filter</span><span class="dropdown"></span></div>
                 <div class="fields_list_body filter">
                     <ul class="connectable"></ul>
@@ -519,17 +519,17 @@
                         <br />
                         <form>
                             <input name="'filter_roles" id="filter_roles" type="text" class="filterbox" /> 
-                            <input type="submit" value="Add" class="i18n add_role" />
+                            <button type="submit" value="Add" class="i18n add_role">Add</button>
                         </form>
-                        <input type="checkbox" class="acl" value="READ" />READ 
-                        <input type="checkbox" class="acl" value="WRITE" /> WRITE 
-                        <input type="checkbox" class="acl" value="GRANT" /> GRANT
+                        <input type="checkbox" class="acl" value="READ" /> <span class='i18n'>READ</span>
+                        <input type="checkbox" class="acl" value="WRITE" /> <span class='i18n'>WRITE</span>
+                        <input type="checkbox" class="acl" value="GRANT" /> <span class='i18n'>GRANT</span>
                 <br />                        
                 <br />
                 <span class="i18n">Roles:</span>
                 <div class="rolelist"></div>
                 <br />
-                <input type="submit" value="Remove permission" class="i18n remove_acl" />
+                <button type="submit" value="Remove permission" class="i18n remove_acl">Remove permission</button>
             </div>
             <br />
             <div class="private">
@@ -543,8 +543,8 @@
             <select class="select_roles" multiple size="4">
                 <% _.each(roles, function(grants, role) {
                     var aclstring ="";
-                     _.each(grants, function(grant, index) { 
-                        aclstring += (index > 0 ? (", " + grant) : grant);
+                     _.each(grants, function(grant, index) {
+                        aclstring += (index > 0 ? (", " + Saiku.i18n.get_translated(grant)) : Saiku.i18n.get_translated(grant));
                     });
                 %>
                     <option value="<%=role %>"><%= role + " [" + aclstring + "]" %></option>

@@ -48,6 +48,15 @@ Saiku.i18n = {
     improve_translation: function () {
         Saiku.tabs.add(new TranslationTab());
         return false;
+    },
+    get_translated : function(untranslated){
+        var retvalue = untranslated;
+        if (this.po_file) {
+            if (typeof this.po_file[untranslated] != "undefined") {
+                retvalue = this.po_file[untranslated];
+            }
+        }
+        return retvalue;
     }
 };
 
@@ -103,6 +112,20 @@ Saiku.i18n = {
 					element.removeClass('i18n');
 				}
 			}
+
+            // Translate label
+            if (element.attr('label')) {
+                translated_label = translate( element.attr('label'), po_file );
+                if (Saiku.i18n.elements.indexOf &&
+                    Saiku.i18n.elements.indexOf(element.attr('label')) === -1) {
+                    Saiku.i18n.elements.push(element.attr('label'));
+                }
+                if (translated_label) {
+                    element.data('original', element.attr('label'));
+                    element.attr({ 'label': translated_label });
+                    element.removeClass('i18n');
+                }
+            }
 			
 			// Remove class so this element isn't repeatedly translated
 			if (element.hasClass('i18n')) {

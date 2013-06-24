@@ -40,9 +40,9 @@ var DimensionList = Backbone.View.extend({
         if (args.dimension && args.dimension.has('template')) {
             this.load_dimension();
         } else if (! args.dimension){
-            $(this.el).html('Could not load dimension. Please log out and log in again.');
+            $(this.el).html("<span class='i18n'>Could not load dimension. Please log out and log in again.</span>");
         } else {
-            $(this.el).html('Loading...');
+            $(this.el).html("<span class='i18n'>Loading...</span>");
             args.dimension.fetch({ success: this.load_dimension });
         }
     },

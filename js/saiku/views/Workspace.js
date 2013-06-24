@@ -146,7 +146,7 @@ var Workspace = Backbone.View.extend({
         // Adjust the height of the separator
         $separator = $(this.el).find('.sidebar_separator');
         var heightReduction = 87;
-        if (Settings.PLUGIN == true || Settings.BIPLUGIN == true) {
+        if (Settings.INTEGRATION == "pentaho" || Settings.INTEGRATION == "stripped") {
             heightReduction = 2;
             if (Settings.MODE == 'table') {
                 heightReduction = -5;
@@ -579,7 +579,7 @@ var Workspace = Backbone.View.extend({
         var info = '<b><span class="i18n">Info:</span></b> &nbsp;' + cdate 
                 + "&emsp;/ &nbsp;" + args.data.width 
                 + " x " + args.data.height 
-                + "&nbsp; / &nbsp;" + runtime + "s";
+                + "&nbsp; / &nbsp;" + runtime + '<span class="i18n">s</span>';
 
         $(this.el).find(".workspace_results_info").html(info);
         this.adjust();
