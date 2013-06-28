@@ -482,7 +482,12 @@
         <script type="text/x-jquery-tmpl" id="template-repository-file">
             <li class='query'>
                 <span class='icon'></span>
-                <a href="#<%= entry.path %>"><%= entry.name %></a>
+                <% if (entry.path.substring(entry.path.lastIndexOf('/') + 1) !== entry.name + '.' + entry.fileType) { %>
+                <a href="#<%= entry.path + '/' + entry.name + '.' + entry.fileType %>">
+                <% } else { %>
+                <a href="#<%= entry.path %>">
+                <% } %>
+                <%= entry.name %></a>
             </li>
         </script>
 
