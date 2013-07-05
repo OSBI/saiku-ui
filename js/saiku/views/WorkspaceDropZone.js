@@ -725,8 +725,7 @@ var WorkspaceDropZone = Backbone.View.extend({
 			if ($target_el.find('li.d_dimension, li.d_measure, li.ui-draggable').length == 0) {
 				$target_el.siblings('.clear_axis').addClass('hide');
 			}        
-			var level=dimension.split('/');
-			delete filterCollections[level[level.length-1]];
+			
 			
 		}	       
         return false;
