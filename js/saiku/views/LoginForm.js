@@ -20,9 +20,9 @@
 var LoginForm = Modal.extend({
     type: "login",
     message: "<form id='login_form'>" +
-        "<label for='username'>Username</label><br />" +
+        "<label for='username'><span class='i18n'>Username</span></label><br />" +
         "<input type='text' id='username' name='username' value='' /><br />" +
-        "<label for='password'>Password</label><br />" +
+        "<label for='password'><span class='i18n'>Password</span></label><br />" +
         "<input type='password' id='password' name='password' value='' />" +
         "</form>",
         

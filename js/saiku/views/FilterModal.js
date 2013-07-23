@@ -37,9 +37,14 @@ var FilterModal = Modal.extend({
     expression_text: function() {
         var c = "<form id='custom_filter'><table border='0px'>";
         if (this.expressionType == "Order") {
-            c += "<tr><td class='col1'>Sort Type: <select id='fun'><option>ASC</option><option>BASC</option><option>DESC</option><option>BDESC</option> </select></td></tr>" 
+            c += "<tr><td class='col1'> <span class='i18n'>Sort Type:</span> <select id='fun'>" +
+                "<option class='i18n' label='Ascending'>ASC</option>" +
+                "<option class='i18n' label='Ascending (Breaking Hierarchy)'>BASC</option>" +
+                "<option class='i18n' label='Descending'>DESC</option>" +
+                "<option class='i18n' label='Descending (Breaking Hierarchy)'>BDESC</option> " +
+                "</select></td></tr>";
         }
-        c += "<tr><td class='col1'>" + this.expressionType + " MDX Expression:</td></tr>"
+        c += "<tr><td class='col1'><span class='i18n'>" + this.expressionType + " MDX Expression:</span></td></tr>"
              + "<tr><td class='col1'><textarea class='filter_expression'></textarea></td></tr>"
              + "</table></form>";
         return c;
@@ -59,7 +64,7 @@ var FilterModal = Modal.extend({
         _.bindAll(this, "save", "expression_text");
 
         _.extend(this.options, {
-            title: "Custom " + this.expressionType + " for " + this.axis
+            title: "<span class='i18n'>Custom " + this.expressionType + " for " + this.axis + "</span>"
         });
 
         this.message = this.expression_text(this.expressionType);
@@ -85,7 +90,7 @@ var FilterModal = Modal.extend({
 
         var alert_msg = "";
         if (typeof this.expression == "undefined" || !this.expression || this.expression == "") {
-            alert_msg += "You have to enter a MDX expression for the " + this.expressionType + " function! ";
+            alert_msg += Saiku.i18n.get_translated("You have to enter a MDX expression for the " + this.expressionType + " function!");
             alert(alert_msg);
         } else {
             if (self.expressionType == "Order") {
@@ -102,7 +107,7 @@ var FilterModal = Modal.extend({
 
     error: function() {
         $(this.el).find('dialog_body')
-            .html("Could not add new folder");
+            .html("<span class='i18n'>Could not add new folder</span>");
     }
 
 

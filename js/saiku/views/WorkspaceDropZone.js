@@ -164,28 +164,28 @@ var WorkspaceDropZone = Backbone.View.extend({
                 };
 
                 var citems = {
-                        "filter" : {name: "Filter", items: 
+                        "filter" : {name: Saiku.i18n.get_translated("Filter"), items:
                          { 
-                                "customfilter": {name: "Custom..." },
-                                "clearfilter": {name: "Clear Filter" }
+                                "customfilter": {name: Saiku.i18n.get_translated("Custom...") },
+                                "clearfilter": {name: Saiku.i18n.get_translated("Clear Filter") }
                          }},
-                        "limit" : {name: "Limit", items: 
+                        "limit" : {name: Saiku.i18n.get_translated("Limit"), items:
                         {
-                                "TopCount###SEPARATOR###10": {name: "Top 10" },
-                                "BottomCount###SEPARATOR###10": {name: "Bottom 10" },
-                                "TopCountQuick" : { name: "Top 10 by...", items: addFun(items, "TopCount") },
-                                "BottomCountQuick" : { name: "Bottom 10 by...", items: addFun(items, "BottomCount") },
-                                "customtop" : {name: "Custom Limit..." },
-                                "clearlimit" : {name: "Clear Limit"}
+                                "TopCount###SEPARATOR###10": {name: Saiku.i18n.get_translated("Top 10") },
+                                "BottomCount###SEPARATOR###10": {name: Saiku.i18n.get_translated("Bottom 10") },
+                                "TopCountQuick" : { name: Saiku.i18n.get_translated("Top 10 by..."), items: addFun(items, "TopCount") },
+                                "BottomCountQuick" : { name: Saiku.i18n.get_translated("Bottom 10 by..."), items: addFun(items, "BottomCount") },
+                                "customtop" : {name: Saiku.i18n.get_translated("Custom Limit...") },
+                                "clearlimit" : {name: Saiku.i18n.get_translated("Clear Limit")}
                          }},
-                        "sort" : {name: "Sort", items:
+                        "sort" : {name: Saiku.i18n.get_translated("Sort"), items:
                         {
-                            "ASCQuick": {name: "Ascending" , items: addFun(items, "ASC") },
-                            "DESCQuick": {name: "Descending", items: addFun(items, "DESC")},
-                            "BASCQuick": {name: "Ascending (Breaking Hierarchy)", items: addFun(items, "BASC")},
-                            "BDESCQuick": {name: "Descending (Breaking Hierarchy)", items: addFun(items, "BDESC") },
-                            "customsort" : { name: "Custom..." },
-                            "clearsort" : {name: "Clear Sort" }
+                            "ASCQuick": {name: Saiku.i18n.get_translated("Ascending") , items: addFun(items, "ASC") },
+                            "DESCQuick": {name: Saiku.i18n.get_translated("Descending"), items: addFun(items, "DESC")},
+                            "BASCQuick": {name: Saiku.i18n.get_translated("Ascending (Breaking Hierarchy)"), items: addFun(items, "BASC")},
+                            "BDESCQuick": {name: Saiku.i18n.get_translated("Descending (Breaking Hierarchy)"), items: addFun(items, "BDESC") },
+                            "customsort" : { name: Saiku.i18n.get_translated("Custom...") },
+                            "clearsort" : {name: Saiku.i18n.get_translated("Clear Sort") }
                         }}
                 };
 

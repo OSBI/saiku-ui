@@ -64,7 +64,7 @@ var SaveQuery = Modal.extend({
             "</form>")({ name: full_path });
 
         _.extend(this.options, {
-            title: "Save query"
+            title: "<span class='i18n'>Save query</span>"
         });
 
         // Initialize repository

@@ -46,10 +46,22 @@ var Table = Backbone.View.extend({
     $body = $(document);
     //$body.off('.contextMenu .contextMenuAutoHide');
     //$('.context-menu-list').remove();
+    $.contextMenu.types.myType = function(item, opt, root) {
+        $('<span>' + item.customName + '</span>').appendTo(this);
+        this.on('contextmenu:focus', function(e) {
+            // setup some awesome stuff
+            Saiku.i18n.translate();
+        }).on('contextmenu:blur', function(e) {
+                // tear down whatever you did
+            }).on('keydown', function(e) {
+                // some funky key handling, maybe?
+            });
+    };
+
     $.contextMenu('destroy', '.row, .col');
     $.contextMenu({
         appendTo: $target,
-        selector: '.row, .col', 
+        selector: '.row, .col',
         ignoreRightClick: true,
          build: function($trigger, e) {
             $target = $(e.currentTarget).find('div');
@@ -165,23 +177,24 @@ var Table = Backbone.View.extend({
             var citems = {
                     "name" : {name: "<b>" + member + "</b>", disabled: true },
                     "sep1": "---------",
-                    "keeponly": {name: "Keep Only", payload: keep_payload }
+                    "keeponly": {name: Saiku.i18n.get_translated("Keep Only"), payload: keep_payload }
             };
             if (d != "Measures") {
-                citems["getchildren"] = {name: "Show Children", payload: children_payload }
+                citems["getchildren"] = {name: Saiku.i18n.get_translated("Show Children"), payload: children_payload }
                 citems["fold1key"] = {
-                        name: "Include Level",
+                        name: Saiku.i18n.get_translated("Include Level"),
                         items: lvlitems("include-")
                     };
                 citems["fold2key"] = {
-                        name: "Keep and Include Level",
+                        name: Saiku.i18n.get_translated("Keep and Include Level"),
                         items: lvlitems("keep-")
                     };
                 citems["fold3key"] = {
-                        name: "Remove Level",
+                        name: Saiku.i18n.get_translated("Remove Level"),
                         items: lvlitems("remove-")
                     };
             }
+            Saiku.i18n.translate();
             return {
                 callback: function(key, options) {
                     var url = '/axis/' + axis + '/dimension/' + encodeURIComponent(d);
@@ -206,7 +219,7 @@ var Table = Backbone.View.extend({
                     
                 },
                 items: citems
-            } 
+            }
         }
     });
     $target.contextMenu();
@@ -229,7 +242,7 @@ var Table = Backbone.View.extend({
             return;
         }
 
-        $(this.el).html('<tr><td>Rendering ' + args.data.width + ' columns and ' + args.data.height + ' rows...</td></tr>');
+        $(this.el).html("<tr><td><span class='i18n'>Rendering</span> " + args.data.width + " <span class='i18n'>columns and</span> " + args.data.height + " <span class='i18n'>rows...</span></td></tr>");
 
         // Render the table without blocking the UI thread
         if (block === true) {
@@ -237,6 +250,8 @@ var Table = Backbone.View.extend({
         } else {
             _.delay(this.process_data, 0, args.data.cellset);
         }
+
+        Saiku.i18n.translate();
 
     },
 

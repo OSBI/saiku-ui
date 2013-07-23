@@ -42,9 +42,9 @@ var OpenDialog = Modal.extend({
         var name = "";
         this.message = '<div style="height:25px; line-height:25px;"><b><span class="i18n">Search:</span></b> &nbsp;'
                 + ' <span class="search"><input type="text" class="search_file"></input><span class="cancel_search"></span></span></div>'
-                + "<div class='RepositoryObjects'>Loading....</div><br><b><div class='query_name'><span class='i18n'>Please select a file.....</span></div></b>"
+                + "<div class='RepositoryObjects i18n'>Loading....</div><br><b><div class='query_name'><span class='i18n'>Please select a file.....</span></div></b>"
         _.extend(this.options, {
-            title: "Open"
+            title: "<span class='i18n'>Open</span>"
         });
 
         // Initialize repository

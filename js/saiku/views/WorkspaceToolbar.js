@@ -294,7 +294,7 @@ var WorkspaceToolbar = Backbone.View.extend({
         (new DrillthroughModal({
             workspace: this.workspace,
             maxrows: 10000,
-            title: "Drill-Through to CSV",
+            title: "<span class='i18n'>Drill-Through to CSV</span>",
             action: "export",
             position: pos,
             query: this.workspace.query
@@ -309,7 +309,7 @@ var WorkspaceToolbar = Backbone.View.extend({
         (new DrillthroughModal({
             workspace: this.workspace,
             maxrows: 200,
-            title: "Drill-Through",
+            title: "<span class='i18n'>Drill-Through</span>",
             action: "table",
             success: this.display_drillthrough,
             position: pos,

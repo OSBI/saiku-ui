@@ -42,7 +42,7 @@ var SelectionsModal = Modal.extend({
         // Initialize properties
         _.extend(this, args);
         this.options.title = "<span class='i18n'>Selections for</span> " + this.name;
-        this.message = "Fetching members...";
+        this.message = "<span class='i18n'>Fetching members...</span>";
         this.query = args.workspace.query;
 
         _.bindAll(this, "fetch_members", "populate", "finished", "get_members", "use_result_action");
