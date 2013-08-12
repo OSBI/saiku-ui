@@ -32,7 +32,7 @@ var Workspace = Backbone.View.extend({
     initialize: function(args) {
         // Maintain `this` in jQuery event handlers
         _.bindAll(this, "caption", "adjust", "toggle_sidebar", "prepare", "new_query", 
-                "init_query", "update_caption", "populate_selections","refresh", "sync_query");
+                "init_query", "update_caption", "populate_selections","refresh", "sync_query", "cancel", "cancelled", "no_results", "error");
                 
         // Attach an event bus to the workspace
         _.extend(this, Backbone.Events);
@@ -260,7 +260,7 @@ var Workspace = Backbone.View.extend({
 
             } else if ('table' == renderMode && renderType in this.querytoolbar) {
                 this.querytoolbar.render_mode = "table";
-                this.querytoolbar.table.sparkType = renderType;
+                this.querytoolbar.spark_mode = renderType;
                 $(this.querytoolbar.el).find('ul.table a.' + renderType).addClass('on');
             }
         } catch (e) {
@@ -586,8 +586,24 @@ var Workspace = Backbone.View.extend({
         return;
     },
 
+    block: function(message) {
+        $(this.el).block({ 
+            message: '<span class="saiku_logo" style="float:left">&nbsp;&nbsp;</span> ' + message
+        });
+        Saiku.i18n.translate();
+    },
+
+    unblock: function() {
+        $(this.el).unblock();
+    },
+
     cancel: function(event) {
-        this.query.action.del("/result", {success: this.cancelled } );
+        var self = this;
+        this.query.action.del("/result", {
+            success: function() {
+                self.cancelled();
+            }
+        });
     },
     
     cancelled: function(args) {
