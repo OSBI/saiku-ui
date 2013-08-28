@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+
+<suite name="Saiku Web UI test using Food Mart database" verbose="3"  parallel="false" thread-count="3">
+
+     <groups>
+         <run>
+             <exclude name="exportToFile"/>
+         </run>
+     </groups>
+ 
+     <listeners>
+         <listener class-name="main.PriorityInterceptor"/>
+     </listeners> 
+  
+     <test name="Run on Internet Explorer"> 
+     <parameter name="browser" value="iexplore"/>
+     <parameter name="platform" value="Windows"/>  
+         <classes>  
+             <class name="query.CreateQuery"/>
+             <class name="query.ExportQuery"/>
+             <class name="query.ModifyQuery"/>
+             <class name="query.ViewQuery"/>
+             <class name="login.LoginTest"/>
+                  <methods>
+            			<exclude name="loginCookieDelete" />
+          	      </methods>
+             <class name="query.LevelQuery"/>
+         </classes>
+     </test>
+
+     <test name="Run on Firefox Windows">
+     <parameter name="browser" value="firefox"/>
+     <parameter name="platform" value="Windows"/>     
+     <groups>
+         <run>
+             <exclude name="DragandDrop"/>
+         </run>
+     </groups>     
+         <classes>
+             <class name="query.CreateQuery"/>
+             <class name="query.ExportQuery"/>
+             <class name="query.ModifyQuery"/>
+             <class name="query.ViewQuery"/>
+             <class name="login.LoginTest"/>
+                  <methods>
+            			<exclude name="loginCookieDelete" />
+          	      </methods>
+             <class name="query.LevelQuery"/>
+                   <methods>
+            			<exclude name="modifyQueryLevelInclude" />
+            			<exclude name="modifyQueryLevelKeepAndInclude" />
+          	       </methods>
+         </classes>
+     </test>
+
+     <test name="Run on Chrome on Windows"> 
+     <parameter name="browser" value="chrome"/>
+     <parameter name="platform" value="Windows"/>
+         <classes>
+             <class name="query.CreateQuery"/>
+             <class name="query.ExportQuery"/>
+             <class name="query.ModifyQuery"/>
+             <class name="query.ViewQuery"/>
+             <class name="login.LoginTest"/>
+                  <methods>
+            			<exclude name="loginCookieDelete" />
+          	      </methods>
+             <class name="query.LevelQuery"/>
+         </classes>
+     </test> 
+
+     <test name="Run on Firefox Linux">    
+     <parameter name="browser" value="firefox"/>
+     <parameter name="platform" value="Linux"/>
+     <groups>
+         <run>
+             <exclude name="DragandDrop"/>
+         </run>
+     </groups>
+         <classes>
+             <class name="query.CreateQuery"/>
+          	 <class name="query.ExportQuery"/>
+             <class name="query.ModifyQuery"/>
+             <class name="query.ViewQuery"/>
+             <class name="login.LoginTest"/>
+             <class name="query.LevelQuery"/>
+         </classes>
+     </test>
+
+     <test name="Run on Chrome on Linux">
+     <parameter name="browser" value="chrome"/>
+     <parameter name="platform" value="Linux"/>
+         <classes>
+             <class name="query.CreateQuery"/>
+                  <methods>
+            			<exclude name="createFolder" />
+            			<exclude name="deleteFolder" />
+          	      </methods>
+          	 <class name="query.ExportQuery"/>
+             <class name="query.ModifyQuery"/>
+             <class name="query.ViewQuery"/>
+             <class name="login.LoginTest"/>
+                  <methods>
+            			<exclude name="loginCookieDelete" />
+          	      </methods>
+             <class name="query.LevelQuery"/>
+         </classes>
+     </test> 
+
+</suite> 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
