@@ -395,19 +395,25 @@ html, body {
     padding-left: 18px;
 }
 .dimension_tree ul li ul li a {
+    /*
     padding-left: 20px;
     background: url('../../../images/src/bullet_blue.png') 0px 4px no-repeat;
+    */
 }
 .measure_tree ul li ul li a {
+    /*
     padding-left: 20px;
     background: url('../../../images/src/bullet_red.png') 0px 4px no-repeat;
+    */
 }
 .dimension_tree .hierarchy {
     padding-left: 1px;
 }
 .dimension_tree .hierarchy a {
+    /*
     cursor: default;
     background: url('../../../images/src/bullet_green.png') 0px 4px no-repeat;
+    */
 }
 
 .sidebar h3 {
@@ -441,11 +447,13 @@ html, body {
 /** Field List */
 
 .workspace_fields {
-    overflow: hidden;
+    overflow: auto;
     padding: 10px 10px 0 10px;
+    margin-right: 20px;
+    width: 218px;
+    float:left;
 }
 .fields_list {
-    min-width: 820px;
     border: 1px solid #CCC;
     margin-bottom: 10px;
     border-radius: 5px;
@@ -454,20 +462,20 @@ html, body {
     box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.10);
     -moz-box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.10);
     -webkit-box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.10);
-
+    float: left;
 }
 .fields_list .fields_list_header {
     background-color: #E6E6E6;
-    background: linear-gradient(to bottom, #FFFFFF, #E6E6E6); 
-    background: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#E6E6E6));
-    background: -moz-linear-gradient(top, #FFFFFF 0%, #E6E6E6 100%);
-    border-right: 1px solid #CCC;
+    background: linear-gradient(to bottom, #FFFFFF, #E5E5E5); 
+    background: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#E5E5E5));
+    background: -moz-linear-gradient(top, #FFFFFF 0%, #E5E5E5 100%);
+    border-bottom: 1px solid #CCC;
     float: left;
     font-weight: bold;
-    padding: 3px 5px 3px 10px;
+    padding: 3px 6px 3px 10px;
     line-height: 28px;
-    width: 70px;
-    border-radius: 5px 0px 0px 5px;
+    width: 200px;
+    border-radius: 5px 5px 0px 0px;
 }
 .fields_list .limit {
     cursor: pointer;
@@ -516,9 +524,9 @@ span.clear_axis {
 
 .fields_list .fields_list_body {
     float: left;
-    padding:  0;
-    margin-right: 37px;
-    width: 85%;
+    padding:  10px 0;
+    margin-right: 7px;
+    width: 200px;
 }
 .fields_list .fields_list_body .all_measures span {
     margin: 0 5px 0 0;
@@ -527,23 +535,24 @@ span.clear_axis {
 }
 .fields_list .fields_list_body ul {
     height: 19px;
-    display: inline-table;
-    float: left;
+    display: block;
     line-height: 19px;
     list-style: none;
     margin: 0px 0px;
     padding: 3px;
-    width: 100%;
+    min-width: 90%;
+    min-height: 70px;
 }
 .fields_list .fields_list_body ul li {
     float: left;
     line-height: 17px;
     list-style-type: none;
     height: 19px;
-    display: inline;
-    padding: 1px 8px 1px 0px;
-    min-width: 70px;
-    text-align: center;
+    display: block;
+    padding: 3px 8px 3px 0px;
+    width: 170px;
+    min-width: 170px;
+    text-align: left;
     white-space:nowrap;
     box-shadow: 0 0 2px #DDD;
     border-radius: 3px;
@@ -552,6 +561,7 @@ span.clear_axis {
     -webkit-box-shadow: 0 0 2px #DDD;
     -webkit-border-radius: 3px;
     margin: 2px 3px;
+    cursor: pointer;
 
 }
 .fields_list .fields_list_body ul li a {
@@ -561,7 +571,9 @@ span.clear_axis {
     float: right;
     margin-right: -5px;
     margin-left: 0;
-    width: auto;
+    width: 170px;
+    text-align: left;
+
 }
 .fields_list .fields_list_body ul li ul li {
     margin-top: 0;
@@ -576,7 +588,7 @@ span.clear_axis {
 
 .ui-sortable-helper {
     line-height: 18px !important;
-    min-width: 70px;
+    min-width: 170px;
     text-align: center;
 }
 .ui-draggable-dragging {
@@ -585,7 +597,7 @@ span.clear_axis {
     line-height: 18px !important;
     list-style-type: none !important;
     margin: 0 !important;
-    min-width: 70px;
+    min-width: 170px;
     padding: 1px 8px !important;
     text-align: center;
     border-radius: 3px;
@@ -601,33 +613,43 @@ span.clear_axis {
     white-space: nowrap;
 }
 .dimension_tree ul .ui-draggable-dragging {
+    /*
     background: #e5f6ff !important;
     background: -webkit-gradient(linear, left top, left bottom, from(#e0e9ef), to(#c2d5e2)) !important;
     background: -moz-linear-gradient(top, #e0e9ef 0%, #c2d5e2 100%) !important;
+    */
     border: 1px solid #2a6085 !important;
-    color: #2a6085 !important;
-    text-align: center;
+    color: black !important;
+    text-align: left;
 }
 .dimension_tree ul .ui-draggable-dragging a {
     color: #2a6085 !important;
 }
 .measure_tree ul .ui-draggable-dragging {
+    /*
     background: #ffe8e8 !important;
     background: -webkit-gradient(linear, left top, left bottom, from(#fcf5f5), to(#fad9d9)) !important;
     background: -moz-linear-gradient(top, #fcf5f5 0%, #fad9d9 100%) !important;
+    */
     border: 1px solid #ed9393 !important;
-    color: #983030 !important;
-    text-align: center;
+    color: black !important;
+    text-align: left;
 }
 .measure_tree ul .ui-draggable-dragging a {
-    color: #983030 !important;
+    color: black !important;
 }
 .d_dimension {
+    /*
     background: #e5f6ff;
     background: -webkit-gradient(linear, left top, left bottom, from(#e0e9ef), to(#c2d5e2));
     background: -moz-linear-gradient(top, #e0e9ef 0%, #c2d5e2 100%);
     border: 1px solid #2a6085;
     color: #2a6085;
+    */
+    background: #EDEDED;
+    border: 1px solid #D5D5D5;
+    color: black;
+    font-weight: bold;
     display: inline !important;
     box-shadow: 0 0 2px #DDD;
 }
@@ -647,10 +669,17 @@ span.clear_axis {
     text-decoration: none;
 }
 .d_measure {
+    /*
     background: #ffe8e8;
     background: -webkit-gradient(linear, left top, left bottom, from(#fcf5f5), to(#fad9d9));
     background: -moz-linear-gradient(top, #fcf5f5 0%, #fad9d9 100%);
     border: 1px solid #ed9393;
+    */
+    background: #EDEDED;
+    border: 1px solid #D5D5D5;
+    color: black;
+    font-weight: bold;
+
     color: #983030;
     display: inline !important;
 }
@@ -985,7 +1014,7 @@ span.clear_axis {
 }
 
 .workspace_editor {
-    overflow: hidden;
+    /* overflow: hidden; */
     padding-left: 5px;
 }
 
