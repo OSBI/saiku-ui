@@ -23,7 +23,7 @@ var SaveQuery = Modal.extend({
 
     events: {
         'click': 'select_root_folder', /* select root folder */
-        'click .dialog_footer a:' : 'call',
+        'click .dialog_footer a' : 'call',
         'submit form': 'save',
         'click .query': 'select_name',
         'click li.folder': 'toggle_folder',
@@ -85,7 +85,7 @@ var SaveQuery = Modal.extend({
         _.bindAll( this, "copy_to_repository", "close", "toggle_folder", "select_name", "populate", "set_name", "cancel_search" );
         
         // fix event listening in IE < 9
-        if($.browser.msie && $.browser.version < 9) {
+        if(isIE && isIE < 9) {
             $(this.el).find('form').on('submit', this.save);    
         }
 

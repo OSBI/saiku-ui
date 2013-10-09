@@ -49,7 +49,7 @@ html, body {
 .used {
     font-weight: bold;
 }
-.sprite, .ui-dialog-titlebar-close, .ui-dialog-titlebar-close:hover, .dialog_icon {
+.sprite, .ui-dialog-titlebar-close,.ui-dialog-titlebar-close button, .ui-dialog-titlebar-close:hover, .dialog_icon {
 	background-image: url(../../../images/sprite.png);
 	background-repeat: no-repeat;
 }
@@ -121,6 +121,7 @@ html, body {
     width: 26px;
 }
 #toolbar ul li a:hover {
+    background-color: #F0F0F0;
     border: 1px solid #CCC;
     padding: 4px;
     border-radius: 2px;
@@ -149,21 +150,6 @@ html, body {
     text-decoration: none;
     text-shadow: 1px 1px 1px #000;
 }
-#toolbar ul li a.new_tab:hover {
-    background-color: #F0F0F0;
-}
-#toolbar ul li a.open_query:hover {
-    background-color: #F0F0F0;
-}
-#toolbar ul li a.logout:hover {
-    background-color: #F0F0F0;
-}
-#toolbar ul li a.about:hover {
-    background-color: #F0F0F0;
-}
-#toolbar ul li a.bug:hover {
-    background-color: #F0F0F0;
-}
 
 /** Logo */
 #logo a {
@@ -174,7 +160,6 @@ html, body {
     margin: -2px 10px 0 0;
     text-indent: -9999px;
 }
-
 
 /** Tabs */
 
@@ -775,6 +760,7 @@ span.clear_axis {
     -webkit-box-shadow: 0 0 10px #EEE;
     box-shadow: 0 0 10px #EEE;
     border: 1px solid #CCC;
+    z-index: 100;
 }
 #password, #username, input.newfolder {
     padding: 4px;
@@ -784,7 +770,7 @@ span.clear_axis {
 	padding: 0 !important;
 }
 .ui-dialog-titlebar {
-    background: #F9F9F9;
+    background: #F0F0F0;
     background: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#F0F0F0));
     background: -moz-linear-gradient(top, #FFFFFF 0%, #F0F0F0 100%);
     border-bottom: 1px solid #CCC;
@@ -805,6 +791,8 @@ span.clear_axis {
     text-shadow: 1px 1px 0 #FFFFFF;
 }
 .ui-dialog .ui-dialog-titlebar-close {
+    background-color: : none;
+    border: none;
     background-position: -624px -97px;
     display: inline-block;
     float: right;
@@ -817,6 +805,7 @@ span.clear_axis {
 	padding: 1px;
 	background-position: -690px -97px;
 	background-color: transparent;
+    cursor: pointer;
 }
 
 .ui-icon {
@@ -1146,7 +1135,7 @@ span.clear_axis {
     background-color: #fff;
     position: fixed;
     width: 20%;
-    min-width: 200px;
+    min-width: 300px;
     left: 40%;
     top: 45%;
     padding: 20px;
@@ -1947,6 +1936,36 @@ span.cancel_search:hover {
 
 .chartworkspace {
     overflow: hidden;
+}
+
+.canvas_wrapper a.button {
+    display: block;
+    height: 16px;
+    padding: 8px;
+    width: 16px;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+}
+
+.canvas_wrapper a.button:hover {
+    border: 1px solid #CCC;
+    padding: 7px;
+}
+.canvas_wrapper .zoomin {
+    background: url('../../../images/src/arrow_in.png') no-repeat;
+    background-repeat:  no-repeat;
+    background-position: 7px 7px;
+}
+.canvas_wrapper .zoomout {
+    background: url('../../../images/src/arrow_up_bnw.png') no-repeat;
+    background-repeat:  no-repeat;
+    background-position: 7px 7px;
+}
+.canvas_wrapper .rerender {
+    background: url('../../../images/src/arrow_refresh_bnw.png') no-repeat;
+    background-repeat:  no-repeat;
+    background-position: 7px 7px;
 }
 
 .chartworkspace_inner {

@@ -20,7 +20,9 @@
 var Chart = Backbone.View.extend({
 
     events: {
-        'click .keep' : 'keepVisible'
+        'click .zoomin' : 'zoomin',
+        'click .zoomout' : 'zoomout',
+        'click .rerender' : 'rerender'
     },
 
 	cccOptions: {
@@ -51,8 +53,12 @@ var Chart = Backbone.View.extend({
         // Create a unique ID for use as the CSS selector
         this.id = _.uniqueId("chart_");
         $(this.el).attr({ id: this.id });
-        //$('<div id="nav_' + this.id + '">' + "<input type='submit' class='keep' value='keep only selected' />" + '</div>').appendTo($(this.el));
-        $('<div class="canvas_wrapper" style="display:none;"><div id="canvas_' + this.id + '"></div></div>').appendTo($(this.el));
+
+        // zoom in button
+        // <a href='#' class='button zoomin' title='Zoom into chart selection'></a>
+
+        var btns = "<span style='float:left;'><a href='#' class='button rerender' title='Re-render chart'></a><a href='#' class='button zoomout' style='display:none;' title='Zoom back out'></a></span>";
+        $('<div class="canvas_wrapper" style="display:none;">' +  btns + '<div id="canvas_' + this.id + '"></div></div>').appendTo($(this.el));
         
         this.cccOptions.canvas = 'canvas_' + this.id;
         this.cccOptions = this.getQuickOptions(this.cccOptions);
@@ -60,7 +66,8 @@ var Chart = Backbone.View.extend({
         this.data = null;
         
         // Bind table rendering to query result event
-        _.bindAll(this, "receive_data", "process_data", "show",  "getData", "render_view", "render_chart", "render_chart_delayed", "getQuickOptions","exportChart","block_ui");
+        _.bindAll(this, "receive_data", "process_data", "show",  "getData", "render_view", "render_chart", 
+                        "render_chart_delayed", "getQuickOptions","exportChart","block_ui", "zoomin", "rerender");
         var self = this;
         this.workspace.bind('query:run',  function() {
             if (! $(self.workspace.querytoolbar.el).find('.render_chart').hasClass('on')) {
@@ -365,23 +372,48 @@ var Chart = Backbone.View.extend({
         this.render_chart();
     },
 
-    keepVisible: function(event) {
+    rerender: function(event) {
+        this.render_chart();
+        event.preventDefault();
+        return false;
+    },
 
-
+    zoomin: function(event) {
         var chart = this.chart.root;
-        var data = chart.data;
-         
+        var data = chart.data;         
         data
         .datums(null, {selected: false})
         .each(function(datum) {
             datum.setVisible(false);
         });
-         
-        data.clearSelected();
-         
+        data.clearSelected();         
         chart.render(true, true, false);
+        event.preventDefault();
+    },
 
+    zoomout: function(event) {
+        var chart = this.chart.root;
+        var data = chart.data;
+        var kData = chart.keptVisibleDatumSet;
 
+        if (kData == null || kData.length == 0) {
+            $(this.el).find('.zoomout').hide();
+        }
+        else if (kData.length == 1) {
+            $(this.el).find('.zoomout').hide();
+            chart.keptVisibleDatumSet = [];
+            pvc.data.Data.setVisible(data.datums(null, { visible : false}), true);
+
+        } else if (kData.length > 1) {
+            chart.keptVisibleDatumSet.splice(kData.length - 1, 1);
+            var nonVisible = data.datums(null, { visible : false}).array();
+            var back = chart.keptVisibleDatumSet[kData.length - 1];
+            _.intersection(back, nonVisible).forEach(function(datum) {
+                    datum.setVisible(true);
+            });
+        }
+        chart.render(true, true, false);
+        event.preventDefault();
     },
 
     // Default static style-sheet
@@ -500,6 +532,7 @@ var Chart = Backbone.View.extend({
         if (!$(this.workspace.querytoolbar.el).find('.render_chart').hasClass('on') || !this.hasProcessed) {
             return;
         }
+        var self = this;
 /* DEBUGGING
 this.med = new Date().getTime();
 $(this.el).prepend(" | chart render (" + (this.med - this.call_time) + ")" );
@@ -523,7 +556,99 @@ this.call_time = undefined;
                 width:  workspaceResults.width() - 40,
                 height: workspaceResults.height() - 40,
                 hoverable: hoverable,
-                animate: animate
+                animate: animate,
+                legend: {
+                    scenes: {
+                        item: {
+                            execute: function() {
+
+                                var chart = this.chart();
+
+                                if (!chart.hasOwnProperty('keptVisibleDatumSet')) {
+                                    chart.keptVisibleDatumSet = [];
+                                }
+
+                                var keptSet = chart.keptVisibleDatumSet.length > 0
+                                                            ? chart.keptVisibleDatumSet[chart.keptVisibleDatumSet.length - 1] 
+                                                            : [];
+                                var zoomedIn = keptSet.length > 0;
+
+                                if (zoomedIn) {
+                                    _.intersection(this.datums().array(), keptSet).forEach(function(datum) {
+                                        datum.toggleVisible();
+                                    });
+
+                                } else {
+                                    pvc.data.Data.toggleVisible(this.datums());
+                                }
+                                this.chart().render(true, true, false);
+
+                            }
+                        }
+                    }
+                },
+                userSelectionAction: function(selectingDatums) {
+                    if (selectingDatums.length == 0) {
+                        return [];
+                    }
+
+                    var chart = self.chart.root;
+                    var data = chart.data;
+                    var selfChart = this.chart;
+
+                    if (!selfChart.hasOwnProperty('keptVisibleDatumSet')) {
+                        selfChart.keptVisibleDatumSet = [];
+                    }
+
+                    // we have too many datums to process setVisible = false initially
+                    if (data.datums().count() > 1500) {
+                        pvc.data.Data.setSelected(selectingDatums, true);
+                    } else if (data.datums(null, {visible: true}).count() == data.datums().count()) {
+                        $(self.el).find('.zoomout').show();
+
+                        var all = data.datums().array();
+
+                        _.each( _.difference(all, selectingDatums), function(datum) {
+                            datum.setVisible(false);
+                        });
+
+                        selfChart.keptVisibleDatumSet = [];
+                        selfChart.keptVisibleDatumSet.push(selectingDatums);
+
+                    } else {
+                        $(self.el).find('.zoomout').show();
+                        
+
+                        var kept = selfChart.keptVisibleDatumSet.length > 0 
+                            ? selfChart.keptVisibleDatumSet[selfChart.keptVisibleDatumSet.length - 1] : [];
+
+                        
+                        var visibleOnes = data.datums(null, { visible: true }).array();
+
+                        var baseSet = kept;
+                        if (visibleOnes.length < kept.length) {
+                            baseSet = visibleOnes;
+                            selfChart.keptVisibleDatumSet.push(visibleOnes);
+                        }
+
+                        var newSelection = [];
+                        _.each( _.difference(visibleOnes, selectingDatums), function(datum) {
+                            datum.setVisible(false);
+                        });
+                        _.each( _.intersection(visibleOnes, selectingDatums), function(datum) {
+                            newSelection.push(datum);
+                        });
+
+                        if (newSelection.length > 0) {
+                            selfChart.keptVisibleDatumSet.push(newSelection);
+                        }
+                    }
+                    
+                
+                chart.render(true, true, false);
+                return [];
+
+                }
         });
 
         /* XXX - enable later
