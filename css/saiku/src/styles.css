@@ -271,6 +271,7 @@ html, body {
     float: left;
     overflow: auto;
     width: 260px;
+    border-top: 1px solid #CCC;
 }
 .sidebar h3 {
     background: #F9F9F9;
@@ -313,6 +314,7 @@ html, body {
     background: #F0F0F0;
     border-right: 1px solid #CCC;
     border-left: 1px solid #CCC;
+    border-top: 1px solid #CCC;
     cursor: pointer;
     float: left;
     width: 3px;
@@ -399,12 +401,6 @@ html, body {
     line-height: 1.5em;
     margin: 0;
     padding: 5px 10px 6px;
-}
-
-/** Tab Panel */
-
-#tab_panel {
-    border-top: 1px solid #CCC;
 }
 
 /** Tab Workspace */
@@ -1137,6 +1133,7 @@ span.clear_axis {
 .workspace_toolbar {
     background: #F9F9F9;
     border-bottom: 1px solid #CCC;
+    border-top: 1px solid #CCC;
     font-weight: bold;
     height: 32px;
     margin: 0 0 3px 0;
@@ -1295,6 +1292,7 @@ a.disabled_toolbar:hover {
 .query_toolbar_vertical {
     background: #FEFEFE;
     border-left: 1px solid #CCC;
+    border-top: 1px solid #CCC;
     font-weight: bold;
     height: 732px;
     width: 90px;
