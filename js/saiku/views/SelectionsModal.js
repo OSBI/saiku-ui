@@ -180,7 +180,9 @@ var SelectionsModal = Modal.extend({
     },
     
     post_render: function(args) {
-        $(args.modal.el).parents('.ui-dialog').css({ width: 1000, left: "inherit", margin:"0 auto" });
+        $(args.modal.el).parents('.ui-dialog')
+            .css({ width: 1000, left: "inherit", margin:"0" })
+            .offset({ top: 0, left: ($(window).width() - dlgWidth)/2});
     },
     
     move_selection: function(event) {

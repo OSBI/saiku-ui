@@ -359,7 +359,7 @@ html, body {
 .dimension_tree ul li a,
 .measure_tree ul li a {
     color: #222;
-    padding: 5px;
+    padding: 5px !important;
     text-decoration: none;
 }
 .dimension_tree ul li a.folder_expand,
@@ -1942,4 +1942,28 @@ span.cancel_search:hover {
 .chartworkspace_inner {
     overflow: auto;
     margin-left: 400px;
+}
+
+.ui-dialog.ui-draggable {
+    margin: 0px !important;
+}
+
+.ui-dialog.ui-draggable-dragging {
+    display: block !important;
+    height: auto !important;
+    text-align: left !important;
+    padding: 0.2em !important;
+    line-height: 16px !important;
+}
+
+.ui-dialog.ui-draggable-dragging .form_button {
+    padding: 5px 5px !important;
+    background: #F0F0F0 !important;
+    background: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#F0F0F0)) !important;
+    background: -moz-linear-gradient(center top , #FFFFFF 0%, #F0F0F0 100%) repeat scroll 0 0 rgba(0, 0, 0, 0) !important;
+}
+
+.ui-dialog.ui-draggable-dragging .ui-dialog-titlebar-close {
+    background-image: url(../../../images/sprite.png) !important;
+    padding: 1px !important;
 }
