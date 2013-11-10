@@ -49,15 +49,22 @@ var SelectionsModal = Modal.extend({
         
         // Determine axis
         this.axis = "undefined"; 
-        if (args.target.parents('.fields_list_body').hasClass('rows')) { 
-            this.axis = "ROWS";
-        }
-        if (args.target.parents('.fields_list_body').hasClass('columns')) { 
-            this.axis = "COLUMNS";
-        }
-        if (args.target.parents('.fields_list_body').hasClass('filter')) { 
-            this.axis = "FILTER";
-            this.use_result_option = false;
+        if (args.axis) {
+            this.axis = args.axis;
+            if (args.axis == "FILTER") {
+                this.use_result_option = false;
+            }
+        } else {
+            if (args.target.parents('.fields_list_body').hasClass('rows')) { 
+                this.axis = "ROWS";
+            }
+            if (args.target.parents('.fields_list_body').hasClass('columns')) { 
+                this.axis = "COLUMNS";
+            }
+            if (args.target.parents('.fields_list_body').hasClass('filter')) { 
+                this.axis = "FILTER";
+                this.use_result_option = false;
+            }
         }
         // Resize when rendered
         this.bind('open', this.post_render);
@@ -180,7 +187,10 @@ var SelectionsModal = Modal.extend({
     },
     
     post_render: function(args) {
-        $(args.modal.el).parents('.ui-dialog').css({ width: 1000, left: "inherit", margin:"0 auto" });
+        var left = ($(window).width() - 1000)/2;
+        $(args.modal.el).parents('.ui-dialog')
+            .css({ width: 1000, left: "inherit", margin:"0" })
+            .offset({ left: left});
     },
     
     move_selection: function(event) {

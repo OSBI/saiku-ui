@@ -56,7 +56,16 @@ var Workspace = Backbone.View.extend({
         
         this.chart = new Chart({ workspace: this });
         // Pull query from args
+        this.item = {};
+        this.isReadOnly = false;
+        if (args && args.item) {
+            this.item = args.item;
+            if (this.item && this.item.hasOwnProperty('acl') && _.indexOf(this.item.acl, "WRITE") <  0) {
+                this.isReadOnly = true;
+            }
+        }
         if (args && args.query) {
+
             this.query = args.query;
             this.query.workspace = this;
             this.query.save({}, { success: this.init_query });
@@ -85,7 +94,8 @@ var Workspace = Backbone.View.extend({
         });        
     },
 
-    refresh: function() {
+    refresh: function(e) {
+        if (e) { e.preventDefault(); };
         Saiku.session.sessionworkspace.refresh();
     },
     
@@ -94,24 +104,45 @@ var Workspace = Backbone.View.extend({
         $(this.el).html(this.template());
         
         this.processing = $(this.el).find('.query_processing');
-        // Show toolbar
-        $(this.el).find('.workspace_toolbar').append($(this.toolbar.el));
-        
-        // Show drop zones
-        $(this.el).find('.workspace_editor').append($(this.drop_zones.el));
+        if (this.isReadOnly || Settings.MODE && (Settings.MODE == "view" || Settings.MODE == "table")) {
+            $(this.el).find('.workspace_editor').remove();
+            this.toggle_sidebar();
+            $(this.el).find('.sidebar_separator').remove();
+            $(this.el).find('.workspace_inner')
+                .css({ 'margin-left': 0 });
+            $(this.el).find('.workspace_fields').remove();
 
-        $(this.el).find('.query_toolbar').append($(this.querytoolbar.el));
-        
-        // Activate sidebar for removing elements
-        $(this.el).find('.sidebar')
-            .droppable({
-                accept: '.d_measure, .d_dimension'
-            });
+            $(this.toolbar.el)
+                .find(".run, .auto, .toggle_fields, .toggle_sidebar,.switch_to_mdx, .new")
+                .parent().remove();
 
-        $(this.el).find('.workspace_results')
-            .droppable({
-                accept: '.d_measure, .d_dimension'
-            });
+        } else {
+
+            // Show drop zones
+            $(this.el).find('.workspace_editor').append($(this.drop_zones.el));    
+            // Activate sidebar for removing elements
+            $(this.el).find('.sidebar')
+                .droppable({
+                    accept: '.d_measure, .d_dimension'
+                });
+
+            $(this.el).find('.workspace_results')
+                .droppable({
+                    accept: '.d_measure, .d_dimension'
+                });
+        }
+
+        if (Settings.MODE && Settings.MODE == "table") {
+            $(this.el).find('.workspace_toolbar').remove();
+            $(this.el).find('.query_toolbar').remove();
+        } else {
+            // Show toolbar
+            $(this.el).find('.workspace_toolbar').append($(this.toolbar.el));
+            $(this.el).find('.query_toolbar').append($(this.querytoolbar.el));
+        
+        }
+
+        
         
         // Add results table
         $(this.el).find('.workspace_results')
@@ -121,6 +152,7 @@ var Workspace = Backbone.View.extend({
         // Adjust tab when selected
         this.tab.bind('tab:select', this.adjust);
         $(window).resize(this.adjust);
+
             
         // Fire off new workspace event
         Saiku.session.trigger('workspace:new', { workspace: this });
@@ -144,7 +176,7 @@ var Workspace = Backbone.View.extend({
     
     adjust: function() {
         // Adjust the height of the separator
-        $separator = $(this.el).find('.sidebar_separator');
+        var $separator = $(this.el).find('.sidebar_separator');
         var heightReduction = 87;
         if (Settings.PLUGIN == true || Settings.BIPLUGIN == true) {
             heightReduction = 2;
@@ -237,6 +269,7 @@ var Workspace = Backbone.View.extend({
     },
     
     init_query: function(isNew) {
+        var self = this;
         try 
         {
             var properties = this.query.properties ? this.query.properties.properties : {} ;
@@ -251,9 +284,9 @@ var Workspace = Backbone.View.extend({
                 this.querytoolbar.switch_render(renderMode);
             }
 
-            if ('chart' == renderMode && renderType in this.chart ) {
-                this.chart[renderType]();
-                $(this.chart.el).find('div').hide();
+            if ('chart' == renderMode) {
+                $(this.chart.el).find('.canvas_wrapper').hide();
+                this.chart.renderer.switch_chart(renderType);
                 $(this.querytoolbar.el).find('ul.chart [href="#' + renderType+ '"]').parent().siblings().find('.on').removeClass('on');
                 $(this.querytoolbar.el).find('ul.chart [href="#' + renderType+ '"]').addClass('on');
 
@@ -286,19 +319,22 @@ var Workspace = Backbone.View.extend({
             $(this.el).find('.workspace_fields').removeClass('disabled').removeClass('hide');
             $(this.el).find('.workspace_editor .mdx_input').addClass('hide');
             $(this.el).find('.workspace_editor .editor_info').addClass('hide');
-            $(this.toolbar.el).find('.auto, .toggle_fields, .query_scenario, .buckets, .non_empty, .swap_axis, .mdx, .switch_to_mdx').parent().show();
+            $(this.toolbar.el).find('.auto, .toggle_fields, .query_scenario, .buckets, .non_empty, .swap_axis, .mdx, .switch_to_mdx, .zoom_mode').parent().show();
             $(this.el).find('.run').attr('href','#run_query');
         }
         this.adjust();
-        if ((Settings.MODE == "view") && this.query) {
-            $(this.toolbar.el).find('.switch_to_mdx, .new').parent().hide();
+        if ((Settings.MODE == "view") && this.query || this.isReadOnly) {
             this.query.run(true);
             return;
         }
 
         if (this.query.get('type') == "QM" && $(this.el).find('.sidebar').hasClass('hide') && (Settings.MODE != "table" || Settings.MODE != "view")) {
                 this.toggle_sidebar();
+        } else if (!$(this.el).find('.sidebar').hasClass('hide') && (this.isReadOnly)) {
+            this.toggle_sidebar();
         }
+
+
         // Find the selected cube
         if (this.selected_cube === undefined) {
             var schema = this.query.get('schema');
@@ -314,17 +350,28 @@ var Workspace = Backbone.View.extend({
         
         if (this.selected_cube) {
             // Create new DimensionList and MeasureList
+            var cubeModel = Saiku.session.sessionworkspace.cube[this.selected_cube];
+
             this.dimension_list = new DimensionList({
                 workspace: this,
-                dimension: Saiku.session.sessionworkspace.dimensions[this.selected_cube]
+                dimension: cubeModel,
+                type: "dimensions"
             });        
             $(this.el).find('.dimension_tree').html('').append($(this.dimension_list.el));
             
             this.measure_list = new DimensionList({
                 workspace: this,
-                dimension: Saiku.session.sessionworkspace.measures[this.selected_cube]
+                dimension: cubeModel,
+                type: "measures"
             });
             $(this.el).find('.measure_tree').html('').append($(this.measure_list.el));
+
+            if (!cubeModel.has('data')) {
+                cubeModel.fetch({ success: function() {
+                    self.trigger('cube:loaded')
+                }});
+            }
+
         } else {
             // Someone literally selected "Select a cube"
             $(this.el).find('.dimension_tree').html('');
@@ -343,7 +390,7 @@ var Workspace = Backbone.View.extend({
         var self = this;
         var sync_ui = function() {
                 
-                if (!Settings.hasOwnProperty('MODE') || (Settings.MODE != "table" && Settings.MODE != "view")) {
+                if (!self.isReadOnly && (!Settings.hasOwnProperty('MODE') || (Settings.MODE != "table" && Settings.MODE != "view"))) {
                     $(self.el).find('.fields_list_body ul').empty();
 
                     $(self.dimension_list.el).find('.parent_dimension a.folder_collapsed').removeAttr('style');
@@ -366,7 +413,7 @@ var Workspace = Backbone.View.extend({
                         .css({ fontWeight: 'normal' });
 
                     $(self.el).find('.fields_list_body').each(function(index, element) {
-                            $axis = $(element);
+                            var $axis = $(element);
                             if ($axis.find('li').length == 0) {
                                 $axis.siblings('.clear_axis').addClass('hide');
                             } else {
@@ -410,7 +457,7 @@ var Workspace = Backbone.View.extend({
                     var members = {};
 
                     if (dimension.name != "Measures" && dimension.selections.length > 0) {
-                        var ds = Saiku.session.sessionworkspace.dimensions[this.selected_cube].get('data');
+                        var ds = Saiku.session.sessionworkspace.cube[this.selected_cube].get('data').dimensions;
                         var h = dimension.selections[0].hierarchyUniqueName;
                         _.each(ds, function(d) {
                             if (dimension.name == d.name) {
@@ -428,7 +475,7 @@ var Workspace = Backbone.View.extend({
                             }
                         });
                     } else if (dimension.name == "Measures" && dimension.selections.length > 0) {
-                        var ms = Saiku.session.sessionworkspace.measures[this.selected_cube].get('data');
+                        var ms = Saiku.session.sessionworkspace.cube[this.selected_cube].get('data').measures;
                         var mlist = [];
                         _.each(ms, function(m) {
                             mlist.push(m.uniqueName);

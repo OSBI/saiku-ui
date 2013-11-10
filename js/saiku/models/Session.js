@@ -33,7 +33,11 @@ var Session = Backbone.Model.extend({
         if (options && options.username && options.password) {
             this.username = options.username;
             this.password = options.password;
-            this.save({username:this.username, password:this.password},{success: this.check_session, error: this.check_session});
+            if (!Settings.DEMO) {
+                this.save({username:this.username, password:this.password},{success: this.check_session, error: this.check_session});
+            } else {
+                this.check_session();    
+            }
 
         } else {
             this.check_session();
@@ -58,7 +62,11 @@ var Session = Backbone.Model.extend({
         if ((response === null || response.sessionid == null)) {
             // Open form and retrieve credentials
             Saiku.ui.unblock();
-            this.form = new LoginForm({ session: this });
+            if (Settings.DEMO) {
+                this.form = new DemoLoginForm({ session: this });
+            } else {
+                this.form = new LoginForm({ session: this });
+            }
             this.form.render().open();
         } else {
             this.sessionid = response.sessionid;
@@ -85,7 +93,7 @@ var Session = Backbone.Model.extend({
             Settings.LOCALSTORAGE_EXPIRATION;
         typeof localStorage !== "undefined" && localStorage && localStorage.setItem('expiration', expires);
 
-        this.save({username:username, password:password},{success: this.check_session, error: this.check_session});
+        this.save({username:username, password:password},{dataType: "text", success: this.check_session, error: this.check_session});
         
     },
     

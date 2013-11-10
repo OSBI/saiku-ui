@@ -32,7 +32,7 @@
         </executions>
     </plugin>
 -->
-<!-- YUI compressor
+
     <plugin>
         <groupId>net.alchim31.maven</groupId>
         <artifactId>yuicompressor-maven-plugin</artifactId>
@@ -51,10 +51,12 @@
           <aggregations>
             <aggregation>
               <insertNewLine>false</insertNewLine>
-              <output>${basedir}/target/Saiku.min.js</output>
+              <output>${basedir}/target/saiku.min.js</output>
               <includes>
-
                   <include>classes/Settings.js</include>
+                  <include>classes/render/SaikuRenderer.js</include>
+                  <include>classes/render/SaikuTableRenderer.js</include>
+                  <include>classes/render/SaikuChartRenderer.js</include>
                   <include>classes/views/Tab.js</include>
                   <include>classes/models/Dimension.js</include>
                   <include>classes/views/DimensionList.js</include>
@@ -65,6 +67,7 @@
                   <include>classes/views/DrillthroughModal.js</include>
                   <include>classes/views/PermissionsModal.js</include>
                   <include>classes/views/LoginForm.js</include>
+                  <include>classes/views/DemoLoginForm.js</include>
                   <include>classes/views/AboutModal.js</include>
                   <include>classes/views/AddFolderModal.js</include>
                   <include>classes/views/FilterModal.js</include>
@@ -78,7 +81,6 @@
                   <include>classes/views/OpenQuery.js</include>
                   <include>classes/views/SaveQuery.js</include>
                   <include>classes/views/OpenDialog.js</include>
-
                   <include>classes/models/Repository.js</include>
                   <include>classes/models/Properties.js</include>
                   <include>classes/models/Result.js</include>
@@ -98,10 +100,20 @@
                   <include>classes/plugins/CCC_Chart/plugin.js</include>
               </includes>
             </aggregation>
+              <aggregation>
+                  <insertNewLine>false</insertNewLine>
+                  <output>${basedir}/target/saiku.embed.min.js</output>
+                  <includes>
+                      <include>classes/render/SaikuRenderer.js</include>
+                      <include>classes/render/SaikuTableRenderer.js</include>
+                      <include>classes/render/SaikuChartRenderer.js</include>
+                      <include>classes/embed/SaikuEmbed.js</include>
+                  </includes>
+              </aggregation>
           </aggregations>
         </configuration>
       </plugin>
--->
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
@@ -124,6 +136,8 @@
                                         <exclude name=".gitignore" />
                                     </fileset>
 								</copy>
+                                <copy file="target/Saiku.min.js" tofile="target/saiku-ui/saiku.min.js"/>
+                                <copy file="target/Saiku.min.js.gz" tofile="target/saiku-ui/saiku.min.js.gz"/>
 <!--
                                 <copy todir="target/saiku-ui/doc/">
 									<fileset dir="${basedir}/target/jsdoc"/>

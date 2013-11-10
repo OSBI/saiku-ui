@@ -123,45 +123,47 @@ var vml = {
       return processedFont;
   },
 
-  d2r: Math.PI * 2 / 360,  // is this used more than once?
-
   get_dim: function (attr, target) {
     var o = target || {};
-    // reformat the most common attributes
-    o.translate_x = 0;
-    o.translate_y = 0;
-    if (attr.transform) {
-      var t = /translate\((-?\d+(?:\.\d+)?(?:e-?\d+)?)(?:,(-?\d+(?:\.\d+)?(?:e-?\d+)?))?\)/.exec(attr.transform); //support exp
-      ///translate\((-?\d+(?:\.\d+)?)(?:,(-?\d+(?:\.\d+)?))?\)/.exec(attr.transform);//support negative translations
-      //var t = /translate\((\d+(?:\.\d+)?)(?:,(\d+(?:\.\d+)?))?\)/.exec(attr.transform);
-      if (t && t[1]) { o.translate_x = parseFloat(t[1]); }
-      if (t && t[2]) { o.translate_y = parseFloat(t[2]); }
+    
+    o.rotation = o.tx = o.ty = 0;
+    o.sx = o.sy = 1;
+
+    var transf = attr.transform;
+    if(transf) {
+      var t = /translate\((-?\d+(?:\.\d+)?(?:e-?\d+)?)(?:,(-?\d+(?:\.\d+)?(?:e-?\d+)?))?\)/.exec(transf);
+      if(t) {
+        if(t[1]) { o.tx = +t[1]; }
+        if(t[2]) { o.ty = +t[2]; }
+      }
       
-      var r = /rotate\((-?\d+\.\d+|-?\d+)\)/.exec(attr.transform);
+      var r = /rotate\((-?\d+(?:\.\d+)?(?:e-?\d+)?)\)/.exec(transf);
       if (r) { 
-          var r = parseFloat(r[1]) % 360;
-          if(r < 0){
-              r += 360;
-          }
-          
-          r *= vml.d2r;
+          var r = (+r[1]) % 360;
+          if(r < 0) { r += 360; }
+          r = pv.radians(r);
+      }
+
+      var s = /scale\((-?\d+(?:\.\d+)?(?:e-?\d+)?)(?:,(-?\d+(?:\.\d+)?(?:e-?\d+)?))?\)/.exec(transf);
+      if(s) {
+        if(s[1]) { o.sx = +s[1]; }
+        if(s[2]) { o.sy = +s[2]; }
       }
       
       o.rotation = r || 0;
-      
-      // var scale_x = 1, scale_y = 1,
-      // var s = /scale\((\d+)(?:,(\d+))?\)/i.exec(value);
-      // if (s && s[1]) { scale[0] = parseInt(s[1], 10); }
-      // if (s && s[2]) { scale[1] = parseInt(s[2], 10); }
     }
-    o.x = parseFloat(attr.x||0);
-    o.y = parseFloat(attr.y||0);
+
+    o.x = parseFloat(attr.x || 0);
+    o.y = parseFloat(attr.y || 0);
+
     if ('width' in attr) {
       o.width = parseFloat(attr.width);
     }
+
     if ('height' in attr) { 
       o.height = parseFloat(attr.height);
     }
+
     return o;
   },
   
@@ -173,17 +175,17 @@ var vml = {
 
     "g": {
       rewrite: 'span',
-      attr: function (attr, style, elm, scenes, i) {
+      attr: function (attr, style, elm, scene, i) {
         var d = vml.get_dim(attr);
         elm.style.cssText = "position:absolute;zoom:1;" + 
-                    "left:" + (d.translate_x + d.x) + "px;" + 
-                    "top:"  + (d.translate_y + d.y) + "px;";
+                    "left:" + (d.tx + d.x) + "px;" + 
+                    "top:"  + (d.ty + d.y) + "px;";
       }
     },
 
     "line": {
       rewrite: 'shape',
-      attr: function (attr, style, elm, scenes, i) {
+      attr: function (attr, style, elm, scene, i) {
         var x1 = parseFloat(attr.x1 || 0),
             y1 = parseFloat(attr.y1 || 0),
             x2 = parseFloat(attr.x2 || 0),
@@ -192,21 +194,21 @@ var vml = {
         elm.coordorigin = "0,0";
         elm.coordsize = "21600,21600";
         vml.path(elm).v = 'M '+ r(x1) + ' ' + r(y1) + ' L ' + r(x2) + ' ' + r(y2) + ' E';
-        vml.stroke(elm, attr, scenes, i);
+        vml.stroke(elm, attr, scene, i);
       },
       css: "top:0px;left:0px;width:1000px;height:1000px"
     },
 
     "rect": {
       rewrite: 'shape',
-      attr: function (attr, style, elm, scenes, i) {
+      attr: function (attr, style, elm, scene, i) {
         var d = vml.get_dim(attr),
             p = vml.path(elm),
             r = vml.round;
         elm.coordorigin = "0,0";
         elm.coordsize = "21600,21600";
-        var x = r(d.translate_x + d.x),
-            y = r(d.translate_y + d.y),
+        var x = r(d.tx + d.x),
+            y = r(d.ty + d.y),
             w = r(d.width),
             h = r(d.height);
         p.v = 'M ' + x       + ' ' + y       + 
@@ -214,22 +216,22 @@ var vml = {
              ' L ' + (x + w) + ' ' + (y + h) + 
              ' L ' + x       + ' ' + (y + h) + 
              ' x';
-        vml.stroke(elm, attr, scenes, i);
-        vml.fill  (elm, attr, scenes, i);
+        vml.stroke(elm, attr, scene, i);
+        vml.fill  (elm, attr, scene, i);
       },
       css: "top:0px;left:0px;width:1000px;height:1000px"
     },
 
     "path": {
       rewrite: 'shape',
-      attr: function (attr, style, elm, scenes, i) {
+      attr: function (attr, style, elm, scene, i) {
         var d  = vml.get_dim(attr),
             es = elm.style;
         
         es.visibility = "hidden";
         
-        es.left = (d.translate_x + d.x) + "px";
-        es.top  = (d.translate_y + d.y) + "px";
+        es.left = (d.tx + d.x) + "px";
+        es.top  = (d.ty + d.y) + "px";
         
         elm.coordorigin = "0,0";
         elm.coordsize   = "21600,21600";
@@ -237,18 +239,41 @@ var vml = {
         elm._events = attr["pointer-events"] || 'none';
         vml.path  (elm, attr.d);
         
-        var skew = vml.rotate(elm, d.rotation);
-        if(skew){
+        var skew = vml.rotateAndScale(elm, d.rotation && -d.rotation, d.sx, d.sy);
+        if(skew) {
             // No science. Just tried and it worked...
             skew.origin = "-0.5,-0.5";
         }
         
-        vml.fill  (elm, attr, scenes, i);
-        vml.stroke(elm, attr, scenes, i);
+        vml.fill  (elm, attr, scene, i);
+        vml.stroke(elm, attr, scene, i);
         
         es.visibility = "visible";
       },
       css: "top:0px;left:0px;width:1000px;height:1000px;"
+    },
+
+    "ellipse": {
+      rewrite: 'oval',
+      attr: function (attr, style, elm, scene, i) {
+        var d  = vml.get_dim(attr),
+            rx = attr.rx,// + 0.5, // ??
+            ry = attr.ry,// + 0.5,
+            es = elm.style;
+        es.left   = (d.tx - rx) + "px";
+        es.top    = (d.ty - ry) + "px";
+        es.width  = (2 * rx) + "px";
+        es.height = (2 * ry) + "px";
+        
+        var skew = vml.rotateAndScale(elm, d.rotation && -d.rotation);
+        if(skew) {
+            // No science. Just tried and it worked...
+            skew.origin = "0,0";
+        }
+
+        vml.fill  (elm, attr, scene, i);
+        vml.stroke(elm, attr, scene, i);
+      }
     },
 
     "circle": {
@@ -260,8 +285,8 @@ var vml = {
             cx = parseFloat(attr.cx || 0),
             cy = parseFloat(attr.cy || 0),
             es = elm.style;
-        es.left = (d.translate_x + d.x + cx + 0.3) + "px";
-        es.top  = (d.translate_y + d.y + cy + 0.3) + "px";
+        es.left = (d.tx + d.x + cx + 0.3) + "px";
+        es.top  = (d.ty + d.y + cy + 0.3) + "px";
         elm.coordorigin = "0,0";
         elm.coordsize = "21600,21600";
         vml.path(elm).v = "ar-" + r + ",-" + r + "," + r + "," + r + ",0,0,0,0x";
@@ -271,35 +296,36 @@ var vml = {
       css: "top:0px;left:0px;width:1000px;height:1000px"
       */
       rewrite: 'oval',
-      attr: function (attr, style, elm, scenes, i) {
+      attr: function (attr, style, elm, scene, i) {
         var d  = vml.get_dim(attr),
-            r  = parseFloat(attr.r  || 0) + 0.5,    
+            r  = parseFloat(attr.r  || 0) + 0.5,
             cx = parseFloat(attr.cx || 0) + 0.7,
             cy = parseFloat(attr.cy || 0) + 0.7,
             es = elm.style;
-        es.left   = (d.translate_x + cx - r) + "px";
-        es.top    = (d.translate_y + cy - r) + "px";
-        es.width  = (r * 2) + "px";
-        es.height = (r * 2) + "px";
-        vml.fill  (elm, attr, scenes, i);
-        vml.stroke(elm, attr, scenes, i);
+        es.left   = (d.tx + cx - r) + "px";
+        es.top    = (d.ty + cy - r) + "px";
+        es.width  = 
+        es.height = (2 * r) + "px";
+
+        vml.fill  (elm, attr, scene, i);
+        vml.stroke(elm, attr, scene, i);
       }
     },
 
     "text": {
       rewrite: 'shape',
-      attr: function (attr, style, elm, scenes, i) {
+      attr: function (attr, style, elm, scene, i) {
         var es = elm.style;
         
-//        es.left = (d.translate_x + d.x) + "px";
-//        es.top = (d.translate_y + d.y) + "px";
+//        es.left = (d.tx + d.x) + "px";
+//        es.top = (d. + d.y) + "px";
         
 //        elm.coordorigin = "0,0";
 //        elm.coordsize   = "21600,21600";
         
         // Set stroke off,
         elm.stroked = "False";
-        //vml.stroke(elm, attr, scenes, i);
+        //vml.stroke(elm, attr, scene, i);
         
         elm.path = "m0,0 l1,0 e";
         
@@ -322,11 +348,11 @@ var vml = {
         vml.path(elm)
            .textpathok = 'True';
         
-        vml.rotate(elm, attr.rotation && -attr.rotation);
+        vml.rotateAndScale(elm, attr.rotation && -attr.rotation);
         
-        var s = scenes[i];
+        var s = scene[i];
         s.fillStyle = vml.solidFillStyle;
-        vml.fill(elm, attr, scenes, i);
+        vml.fill(elm, attr, scene, i);
         s.fillStyle = null;
       },
       css: "position:absolute;top:0px;left:0px;width:1px;height:1px;"
@@ -387,21 +413,23 @@ var vml = {
     return result || value;
   },
 
-  fill: function (elm, attr, scenes, i) {
+  fill: function (elm, attr, scene, i) {
     var fill = elm.getElementsByTagName('fill')[0] ||
                (fill = elm.appendChild(vml.createElement('vml:fill')));
     
-    var fillStyle = scenes[i].fillStyle;
-    
-    if (!attr.fill || !fillStyle || (fillStyle.type === 'solid' && attr.fill === 'none')) {
+    var fillStyle = scene[i].fillStyle;
+    var fillType  = fillStyle && fillStyle.type;
+    if(!fillType) { fillType = 'solid'; }
+
+    if (!attr.fill || !fillStyle || (fillType === 'solid' && attr.fill === 'none')) {
       fill.on = 'false';
     } else {
       fill.on = 'true';
-      if(fillStyle.type === 'solid'){
+      if(fillType === 'solid') {
           fill.type  = 'solid';
           fill.color = vml.color(attr.fill);
       } else {    
-          var isLinear = fillStyle.type === 'lineargradient';
+          var isLinear = fillType === 'lineargradient';
           fill.method = 'none';
           
           var stops = fillStyle.stops;
@@ -440,7 +468,7 @@ var vml = {
     }
   },
   
-  stroke: function (elm, attr, scenes, i) {
+  stroke: function (elm, attr, scene, i) {
     var stroke = elm.getElementsByTagName('stroke')[0] ||
                  (stroke = elm.appendChild(vml.createElement('vml:stroke')));
     
@@ -501,20 +529,38 @@ var vml = {
     return sk; 
   },
   
-  rotate: function(elm, r /*radians*/){
-      if (r){
-          r = 180 * r / Math.PI;
-          r = (~~r % 360) * vml.d2r;
-          if (r) {
-              var ct = Math.cos(r).toFixed(8),
-                  st = Math.sin(r).toFixed(8);
-              
-              var skew = vml.skew(elm);
-              skew.on = 'true';
-              skew.matrix = ct + "," + st + "," + -st + "," + ct + ",0,0";
-              //elm.rotation = ~~(r / vml.d2r); // does not work
-              return skew;
-          }
+  rotateAndScale: function(elm, r /*radians*/, sx, sy) {
+      if(r) {
+          r = pv.radians(Math.round(pv.degrees(r)) % 360);
+      }
+
+      var hasScale = (sx && sx !== 1) || (sy && sy !== 1);
+      if(r || hasScale) {
+        var skew = vml.skew(elm);
+        skew.on = 'true';
+        skew.offset = '0,0';
+
+        if(!sx) { sx = 1; }
+        if(!sy) { sy = 1; }
+
+        var m;
+        if(!r) {
+          // Only Scale
+          m = sx.toFixed(8) + ",0,0," + sy.toFixed(8) + ",0,0";
+        } else {
+          // Rotation and, possibly, scale
+          var ct = Math.cos(r);
+          var st = Math.sin(r);
+
+          m = (sx* ct).toFixed(8) + "," + (sy*st).toFixed(8) + "," + 
+              (sx*-st).toFixed(8) + "," + (sy*ct).toFixed(8) + ",0,0";
+
+          //elm.rotation = ~~(r / vml.d2r); // does not work
+        }
+
+        skew.matrix = m;
+
+        return skew;
       }
   },
   
@@ -748,8 +794,13 @@ pv.VmlScene = {
     "mouseout",
     "mousemove",
     "click",
-    "dblclick"
+    "dblclick",
+    "contextmenu"
   ],
+
+  mousePositionEventSet: pv.Scene.mousePositionEventSet,
+  eventsToNumber: pv.Scene.eventsToNumber,
+  numberToEvents: pv.Scene.numberToEvents,
 
   // implicit values are not used for VML, assigned render faster and we have
   // no desire to keep the DOM clean here - only to make it work!
@@ -778,7 +829,7 @@ pv.renderer = function() { return 'vml'; };
     pv.VmlScene.minBarLineWidth  = is64bit ? 1.2 : 1.0;
 }(vml.is64Bit));
 
-pv.VmlScene.expect = function (e, type, scenes, i, attr, style) {
+pv.VmlScene.expect = function(e, type, scene, i, attr, style) {
   style = style || {};
   
   var helper = vml.elm_defaults[type] || {}, 
@@ -794,9 +845,9 @@ pv.VmlScene.expect = function (e, type, scenes, i, attr, style) {
     e = vml.createElement(type);
   }
   
-  if(attr){
+  if(attr) {
       if ('attr' in helper) {
-        helper.attr(attr, style, e, scenes, i);
+        helper.attr(attr, style, e, scene, i);
       }
       
       if (attr.cursor in vml.cursorstyles) {
@@ -820,7 +871,7 @@ pv.VmlScene.removeSiblings = function(e) {
   }
 };
 
-pv.VmlScene.addFillStyleDefinition = function(/*scenes, fill*/){};
+pv.VmlScene.addFillStyleDefinition = function(/*scene, fill*/){};
 
 // Done differently
 pv.VmlScene.setAttributes = function(/*e, attributes*/) {};
@@ -830,10 +881,10 @@ pv.VmlScene.setStyle = function(e, style) {
     if(prevStyle === style) { prevStyle = null; }
     
     var eStyle = e.style;
-    for (var name in style) {
+    for(var name in style) {
         var value = style[name];
         if(!prevStyle || (value !== prevStyle[name])) {
-            if (value == null) {
+            if(value == null) {
                 eStyle.removeAttribute(name);   // cssText 
             } else { 
                 eStyle[name] = value;
@@ -844,15 +895,15 @@ pv.VmlScene.setStyle = function(e, style) {
     e.__style__ = style;
 };
 
-pv.VmlScene.append = function(e, scenes, index) {
+pv.VmlScene.append = function(e, scene, index) {
   // FIXME: hooks the scene onto the element --- this is probably hemorrhaging memory in MSIE
   // it is only ever used by the envent dispatcher so it should probably be stored in a cache
-  e.$scene = {scenes: scenes, index: index};
+  e.$scene = {scenes: scene, index: index};
   
   // attach a title to element
-  e = this.title(e, scenes[index]);
+  e = this.title(e, scene[index]);
   if (!e.parentNode || e.parentNode.nodeType === 11) {  // 11 == documentFragment
-    scenes.$g.appendChild(e);
+    scene.$g.appendChild(e);
   }
   
   return e.nextSibling;
@@ -864,26 +915,26 @@ pv.VmlScene.title = function(e, s) {
 };
 
 // mostly the same code as pv.SvgScene.panel, but with less MSIE crashing...
-pv.VmlScene.panel = function(scenes){
-  var g = scenes.$g, 
+pv.VmlScene.panel = function(scene){
+  var g = scene.$g, 
       e = g && g.firstChild;
   
   var inited = false;
-  for (var i = 0, L = scenes.length; i < L; i++) {
-    var s = scenes[i];
+  var style;
+  for(var i = 0, L = scene.length; i < L; i++) {
+    var s = scene[i];
 
     /* visible */
-    if (!s.visible) continue;
+    if(!s.visible) continue;
 
     /* top level element */
-    if (!scenes.parent) {
+    if(!scene.parent) {
       var canvas = s.canvas;
-      with(canvas.style){
-          display = "inline-block";
-          zoom    = 1;
-      }
+      style = canvas.style;
+      style.display = "inline-block";
+      style.zoom    = 1;
       
-      if (g && (g.parentNode !== canvas)) {
+      if(g && (g.parentNode !== canvas)) {
         g = canvas.firstChild;
         e = g && g.firstChild;
       }
@@ -896,11 +947,11 @@ pv.VmlScene.panel = function(scenes){
         
         // Prevent selecting VML elements when dragging
         g.unselectable  = 'on';
-        g.onselectstart = function(){ return false; };
+        g.onselectstart = function() { return false; };
         
         var events   = this.events;
         var dispatch = this.dispatch;
-        for (var j = 0, E = events.length; j < E; j++) {
+        for(var j = 0, E = events.length; j < E; j++) {
           g.addEventListener
               ? g.addEventListener(events[j], dispatch, false)
               : g.attachEvent("on" + events[j], dispatch);
@@ -909,22 +960,21 @@ pv.VmlScene.panel = function(scenes){
         e = g.firstChild;
       }
       
-      scenes.$g = g;
+      scene.$g = g;
       
       var w = (s.width  + s.left + s.right ),
           h = (s.height + s.top  + s.bottom);
       
-      with(g.style){
-          width  = w + 'px';
-          height = h + 'px';
-          clip   = "rect(0px " + w + "px " + h + "px 0px)";
-      }
+      style = g.style;
+      style.width  = w + 'px';
+      style.height = h + 'px';
+      style.clip   = "rect(0px " + w + "px " + h + "px 0px)";
     } // end if top level element
     
     /* clip (nest children) */
     var c;
-    if (s.overflow === "hidden") {
-      c = this.expect(e, "g", scenes, i);
+    if(s.overflow === "hidden") {
+      c = this.expect(e, "g", scene, i);
       c.style.position = "absolute";
       c.style.clip = "rect(" + 
                   s.top.toFixed(2) + "px " + 
@@ -932,16 +982,16 @@ pv.VmlScene.panel = function(scenes){
                   (s.top + s.height).toFixed(2) + "px " + 
                   s.left.toFixed(2) + "px)";
       
-      if (!c.parentNode) { 
+      if(!c.parentNode) { 
           g.appendChild(c); 
       }
       
-      scenes.$g = g = c;
+      scene.$g = g = c;
       e = c.firstChild;
     }
     
     /* fill */
-    e = this.fill(e, scenes, i);
+    e = this.fill(e, scene, i);
     
     /* transform (push) */
     var k = this.scale,
@@ -952,44 +1002,47 @@ pv.VmlScene.panel = function(scenes){
     this.scale *= t.k;
     
     /* children */
-    if(s.children.length){
+    if(s.children.length) {
         var attrs = {
             "transform": "translate(" + x + "," + y + ")" +
                          (t.k != 1 ? " scale(" + t.k + ")" : "")
         };
         
-        this.eachChild(scenes, i, function(child){
-          child.$g = e = this.expect(e, "g", scenes, i, attrs);
+        var childScenes = this.getSortedChildScenes(scene, i);
+        for(var j = 0, C = childScenes.length ; j < C; j++) {
+          var childScene = childScenes[j];
           
-          this.updateAll(child);
-        
+          childScene.$g = e = this.expect(e, "g", scene, i, attrs);
+
+          this.updateAll(childScene);
+          
           var parentNode = e.parentNode;
           if (!parentNode || parentNode.nodeType === 11) {
             g.appendChild(e);
             var helper = vml.elm_defaults[e.svgtype];
             if (helper && typeof helper.onappend === 'function') {
-              helper.onappend(e, scenes[i]);
+              helper.onappend(e, scene[i]);
             }
           }
             
           e = e.nextSibling;
-        }); // end eachChild
+        }
     }
     
     /* transform (pop) */
     this.scale = k;
     
     /* stroke */
-    e = this.stroke(e, scenes, i);
+    e = this.stroke(e, scene, i);
     
     /* clip (restore group) */
     if (c) {
-      scenes.$g = g = c.parentNode;
+      scene.$g = g = c.parentNode;
       e = c.nextSibling;
     }
   } // end for panel instance
   
-  if(inited){
+  if(inited) {
     this.removeSiblings(e);
     
     // IE doesn't immediately render the last VML element???
@@ -1206,16 +1259,16 @@ pv.VmlScene.dispatch = pv.listener(function(e){
   }
 });
 
-pv.VmlScene.image = function(scenes) {
-  var e = scenes.$g.firstChild;
-  for (var i = 0; i < scenes.length; i++) {
-    var s = scenes[i];
+pv.VmlScene.image = function(scene) {
+  var e = scene.$g.firstChild;
+  for (var i = 0; i < scene.length; i++) {
+    var s = scene[i];
 
     /* visible */
     if (!s.visible) continue;
 
     /* fill */
-    e = this.fill(e, scenes, i);
+    e = this.fill(e, scene, i);
 
     /* image */
     if (s.image) {
@@ -1233,18 +1286,17 @@ pv.VmlScene.image = function(scenes) {
       st.msInterpolationMode = 'bicubic';
     }
     
-    e = this.append(e, scenes, i);
-
-    /* stroke */
-    e = this.stroke(e, scenes, i);
+    e = this.append(e, scene, i);
+    e = this.stroke(e, scene, i);
   }
+
   return e;
 };
 
-pv.VmlScene.label = function(scenes) {
-  var e = scenes.$g.firstChild;
-  for (var i = 0; i < scenes.length; i++) {
-    var s = scenes[i];
+pv.VmlScene.label = function(scene) {
+  var e = scene.$g.firstChild;
+  for(var i = 0, L = scene.length ; i < L ; i++) {
+    var s = scene[i];
 
     // visible
     if (!s.visible) continue;
@@ -1266,36 +1318,23 @@ pv.VmlScene.label = function(scenes) {
     
     var dx = 0;
     var dy = 0;
-    switch(s.textBaseline){
-        case 'middle':
-            dy  = (.1 * label.height); // slight middle baseline correction
-            break;
-            
-        case 'top':
-            dy  = s.textMargin + .5 * label.height;
-            break;
-            
-        case 'bottom':
-            dy  = -(s.textMargin + .5 * label.height);
-            break;
+    switch(s.textBaseline) {
+        case 'middle': dy  = (.1 * label.height); break; // slight middle baseline correction
+        case 'top':    dy =  (s.textMargin + .5 * label.height); break;
+        case 'bottom': dy = -(s.textMargin + .5 * label.height); break;
     }
 
     // Text alignment is already handled by VML's textPath "v-text-align" style attribute
     // So, only the text margin must be explicitly handled.
-    switch(s.textAlign){
-        case 'left':
-            dx  = s.textMargin;
-            break;
-            
-        case 'right':
-            dx  = -s.textMargin;
-            break;
+    switch(s.textAlign) {
+        case 'left':  dx =  s.textMargin; break;
+        case 'right': dx = -s.textMargin; break;
     }
  
     // VML already handles rotation relative to the elements position.
     // Only need to rotate the position.
     var a = s.textAngle;
-    if(a){
+    if(a) {
         var ct = Math.cos(a);
         var st = Math.sin(a);
 
@@ -1311,13 +1350,11 @@ pv.VmlScene.label = function(scenes) {
     // ---------------
     
     var attr = {};
-    if(s.cursor) { 
-        attr.cursor = s.cursor; 
-    }
+    if(s.cursor) { attr.cursor = s.cursor; }
     
     attr.fill = vml.color(fill.color) || "black";
     
-    if(vml.is64Bit){
+    if(vml.is64Bit) {
         // The text is overly black/bold
         attr['fill-opacity'] = 0.7;
     }
@@ -1330,7 +1367,7 @@ pv.VmlScene.label = function(scenes) {
     attr.font = font;
     attr.textDecoration = s.textDecoration;
     
-    e = this.expect(e, "text", scenes, i, attr, {    
+    e = this.expect(e, "text", scene, i, attr, {    
       'display':    'block',
       'lineHeight': 1,
       'whiteSpace': 'nowrap',
@@ -1341,24 +1378,28 @@ pv.VmlScene.label = function(scenes) {
       'left':       left + 'px'
     });
 
-    e = this.append(e, scenes, i);
+    e = this.append(e, scene, i);
   }
+
   return e;
 };
 
-pv.VmlScene.wedge = function(scenes) {
-  var e = scenes.$g.firstChild,
+pv.VmlScene.wedge = function(scene) {
+  var e = scene.$g.firstChild,
       round = vml.round;
-  for (var i = 0; i < scenes.length; i++) {
-    var s = scenes[i];
+
+  for(var i = 0, L = scene.length ; i < L ; i++) {
+    var s = scene[i];
 
     // visible
-    if (!s.visible) continue;
-    var fill = s.fillStyle, stroke = s.strokeStyle;
-    if (!fill.opacity && !stroke.opacity) continue;
+    if(!s.visible) continue;
+
+    var fill   = s.fillStyle, 
+        stroke = s.strokeStyle;
+    if(!fill.opacity && !stroke.opacity) continue;
 
     // create element sans path
-    e = this.expect(e, "path", scenes, i, {
+    e = this.expect(e, "path", scene, i, {
       "pointer-events": s.events,
       "cursor": s.cursor,
       "transform": "translate(" + s.left + "," + s.top + ")",
@@ -1377,7 +1418,7 @@ pv.VmlScene.wedge = function(scenes) {
     
     // add path
     var p = e.getElementsByTagName('path')[0];
-    if (!p) {
+    if(!p) {
       p = vml.make('path');
       e.appendChild(p);
     }
@@ -1386,8 +1427,8 @@ pv.VmlScene.wedge = function(scenes) {
     var r1 = round(s.innerRadius),
         r2 = round(s.outerRadius),
         d;
-    if (s.angle >= 2 * Math.PI) {
-      if (r1) {
+    if(s.angle >= 2 * Math.PI) {
+      if(r1) {
         d = "AE0,0 " + r2 + "," + r2 + " 0 23592960"
           + "AL0,0 " + r1 + "," + r1 + " 0 23592960";
       } else {
@@ -1395,7 +1436,7 @@ pv.VmlScene.wedge = function(scenes) {
       }
     } else {
       var sa = Math.round(s.startAngle / Math.PI * 11796480),
-           a = Math.round(s.angle / Math.PI * 11796480);
+           a = Math.round(s.angle      / Math.PI * 11796480);
       if (r1) {
         d = "AE 0,0 " + r2 + "," + r2 + " " + -sa + " " + -a
           + " 0,0 " + r1 + "," + r1 + " " + -(sa + a) + " " + a
@@ -1408,7 +1449,7 @@ pv.VmlScene.wedge = function(scenes) {
     }
     p.v = d;
 
-    e = this.append(e, scenes, i);
+    e = this.append(e, scene, i);
   }
   
   return e;

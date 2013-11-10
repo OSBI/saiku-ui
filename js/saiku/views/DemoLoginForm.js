@@ -17,22 +17,20 @@
 /**
  * The login prompt on startup
  */
-var LoginForm = Modal.extend({
+var DemoLoginForm = Modal.extend({
     type: "login",
-    message: "<form id='login_form'>" +
-        "<label for='username'>Username</label>" +
-        "<input type='text' id='username' name='username' value='' />" +
-        "<label for='password'>Password</label>" +
-        "<input type='password' id='password' name='password' value='' />" +
+    message: "<form id='demo_form'>" +
+        "<label for='email'>Email:</label>" +
+        "<input type='text' id='email' name='email' value='' />" +
         "</form>",
         
     buttons: [
-        { text: "Login", method: "login" }
+        { text: "Start Demo", method: "login" }
     ],
     
     events: {
         'click a': 'call',
-        'keyup #login_form input': 'check'
+        'submit form ' : 'login'
     },
     
     initialize: function(args) {
@@ -44,22 +42,31 @@ var LoginForm = Modal.extend({
     
     adjust: function() {
         $(this.el).parent().find('.ui-dialog-titlebar-close').hide();
-        $(this.el).find("#username").select().focus();
+        $(this.el).find("#email").select().focus();
     },
     
-    check: function(event) {
-        if(event.which === 13) {
-            this.login();
-        }
-    },
-    
-    login: function() {
+    login: function(e) {
         
-        var l_username = $(this.el).find("#username").val();
-        var l_password = $(this.el).find("#password").val();
-        $(this.el).dialog('close');
-        this.session.login(l_username, l_password);
+        var l_username = Settings.USERNAME;
+        var l_password = Settings.PASSWORD;
+        var email = $(this.el).find("#email").val();
 
+        if (email) {
+            window.Intercom('boot', {
+                        email: email,
+                        created_at:  Math.round((new Date()).getTime() / 1000),
+                        app_id: "597eb390acd63f51158efafc191ef490defb8bdd",
+                        widget: {activator: '#IntercomDefaultWidget'}
+              }
+            );
+            $(this.el).dialog('close');
+            this.session.login(l_username, l_password);
+        }
+
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
         return true;
     }
 });

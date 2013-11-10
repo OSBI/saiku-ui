@@ -50,7 +50,7 @@ var DrillthroughModal = Modal.extend({
         _.bindAll(this, "ok", "drilled");
 
         // Resize when rendered
-        this.bind('open', this.post_render);
+        
         this.render();
                // Load template
        $(this.el).find('.dialog_body')
@@ -65,23 +65,25 @@ var DrillthroughModal = Modal.extend({
                 + "/" + this.query.get('cube');
 
         var container = $("#template-drillthrough-list").html();
-        var dimensions = Saiku.session.sessionworkspace.dimensions[key].get('data');
-        var measures = Saiku.session.sessionworkspace.measures[key].get('data');
 
-        if (typeof dimensions == "undefined" || typeof measures == "undefined") {
-                        if (typeof localStorage !== "undefined" && localStorage && 
-                            localStorage.getItem("dimension." + key) !== null &&
-                            localStorage.getItem("measure." + key) !== null) {
-                            Saiku.session.sessionworkspace.dimensions[key] = new Dimension(JSON.parse(localStorage.getItem("dimension." + key)));
-                            Saiku.session.sessionworkspace.measures[key] = new Measure(JSON.parse(localStorage.getItem("measure." + key)));
+        var cubeModel = Saiku.session.sessionworkspace.cube[key];
+        var dimensions = null;
+        var measures = null; 
+
+        if (cubeModel && cubeModel.has('data')) {
+            dimensions = cubeModel.get('data').dimensions;
+            measures = cubeModel.get('data').measures;
+        }
+
+        if (!cubeModel || !dimensions || !measures) {
+                        if (typeof localStorage !== "undefined" && localStorage && localStorage.getItem("cube." + key) !== null) {
+                            Saiku.session.sessionworkspace.cube[key] = new Cube(JSON.parse(localStorage.getItem("cube." + key)));
                         } else {
-                            Saiku.session.sessionworkspace.dimensions[key] = new Dimension({ key: key });
-                            Saiku.session.sessionworkspace.measures[key] = new Measure({ key: key });
-                            Saiku.session.sessionworkspace.dimensions[key].fetch({ async : false });
-                            Saiku.session.sessionworkspace.measures[key].fetch({ async : false });
+                            Saiku.session.sessionworkspace.cube[key] = new Cube({ key: key });
+                            Saiku.session.sessionworkspace.cube[key].fetch({ async : false });
                         }
-                        dimensions = Saiku.session.sessionworkspace.dimensions[key].get('data');
-                        measures = Saiku.session.sessionworkspace.measures[key].get('data');
+                        dimensions = Saiku.session.sessionworkspace.cube[key].get('data').dimensions;
+                        measures = Saiku.session.sessionworkspace.cube[key].get('data').measures;
         } 
 
         var templ_dim =_.template($("#template-drillthrough-dimensions").html())({dimensions: dimensions});
@@ -136,9 +138,6 @@ var DrillthroughModal = Modal.extend({
     },
 
 
-    post_render: function(args) {
-        $(args.modal.el).parents('.ui-dialog').css({ width: "150px" });
-    },
     
     ok: function() {
         // Notify user that updates are in progress
@@ -173,20 +172,20 @@ var DrillthroughModal = Modal.extend({
     },
 
     drilled: function(model, response) {
-        var table = new Table({ workspace: this.workspace });
+        var html = "";
         if (response != null && response.error != null) {
-            $(table.el).html('<tr><td>' + safe_tags_replace(response.error) + '</td></tr>');
+            html = safe_tags_replace(response.error);
         } else {
-            table.process_data(response.cellset);
+            var tr = new SaikuTableRenderer();
+            html = tr.render(response);
         }
 
         //table.render({ data: response }, true);
 
 
         Saiku.ui.unblock();
-        var html = '<div id="fancy_results" class="workspace_results" style="overflow:visible"><table>' + $(table.el).html() + '</table></div>';
+        var html = '<div id="fancy_results" class="workspace_results" style="overflow:visible">' + html + '</div>';
         this.remove();
-        table.remove();
         $.fancybox(html
             ,
             {
