@@ -31,7 +31,7 @@ var argv = process.ARGV || process.argv;
 
 var http = require('http');
 var express = require('express');
-var app = express();
+var app = express.createServer ? express.createServer() || express();
 var port = process.env.C9_PORT || parseInt(argv[2], 10) || 8080;
 var backend_host = argv[3] || 'dev.analytical-labs.com';
 var backend_port = argv[4] || 80;
