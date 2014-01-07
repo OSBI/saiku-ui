@@ -85,10 +85,10 @@ SaikuTableRenderer.prototype.internalRender = function(data, options) {
                 } else {
                     // All the rest...
                     var groupChange = (col > 1 && row > 1 && !isHeaderLowestLvl && col > firstColumn) ?
-                        data[row-1][col+1].value != data[row-1][col].value
+                        data[row-1][col+1].properties.uniquename != data[row-1][col].properties.uniquename
                         : false;
                     var maxColspan = colSpan > 999 ? true : false;
-                    if (header.value != nextHeader.value || isHeaderLowestLvl || groupChange || maxColspan) {
+                    if (header.properties.uniquename != nextHeader.properties.uniquename || isHeaderLowestLvl || groupChange || maxColspan) {
                         if (header.value == "null") {
                             contents += '<th class="col_null" colspan="' + colSpan + '"><div>&nbsp;</div></th>';
                         } else {
@@ -111,7 +111,7 @@ SaikuTableRenderer.prototype.internalRender = function(data, options) {
 
                 var previousRow = data[row - 1];
 
-                var same = !isHeaderLowestLvl && (col == 0 || previousRow[col-1].value == data[row][col-1].value) && header.value === previousRow[col].value;
+                var same = !isHeaderLowestLvl && (col == 0 || previousRow[col-1].properties.uniquename == data[row][col-1].properties.uniquename) && header.properties.uniquename === previousRow[col].properties.uniquename;
                 var value = (same ? "<div>&nbsp;</div>" : '<div rel="' + row + ":" + col +'">' + header.value + '</div>');
                 var tipsy = "";
                 /* var tipsy = ' original-title="';
