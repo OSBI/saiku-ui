@@ -467,10 +467,9 @@ textarea, select {
     box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.10);
     -moz-box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.10);
     -webkit-box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.10);
-    display: -webkit-box;      /* OLD - iOS 6-, Safari 3.1-6 */
     display: -moz-box;         /* OLD - Firefox 19- (buggy but mostly works) */
-    display: -ms-flexbox;      /* TWEENER - IE 10 */
     display: -webkit-flex;     /* NEW - Chrome */
+    display: -ms-flexbox;      /* TWEENER - IE 10 */
     display: flex;             /* NEW, Spec - Opera 12.1, Firefox 20+ */
 }
 .fields_list .fields_list_header {
@@ -485,7 +484,6 @@ textarea, select {
     line-height: 28px;
     min-width: 80px;
     border-radius: 5px 0px 0px 5px;
-    -webkit-box-flex: auto;    /* OLD - iOS 6-, Safari 3.1-6 */
     -moz-box-flex: auto;       /* OLD - Firefox 19- */
     -webkit-flex: auto;        /* Chrome */
     -ms-flex: auto;            /* IE 10 */
