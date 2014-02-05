@@ -546,6 +546,8 @@ var WorkspaceDropZone = Backbone.View.extend({
         if ("FILTER" == target && ui.item.hasClass('d_dimension')) {
                 var ev = { target : $axis.find('a[href="#' + member + '"]') };
                 this.selections(ev, ui);
+                // keep only one child of a parent dimension in filter placeholder
+                this.remove_raw(ui);
         }
 
         // Prevent workspace from getting this event
@@ -570,7 +572,10 @@ var WorkspaceDropZone = Backbone.View.extend({
                 }
             });
             var index = dimensions.indexOf(dimension);
-
+            // keep only one child of a parent dimension in filter placeholder
+          	if ("FILTER" == target && ui.item.hasClass('d_dimension')) {
+         				    this.remove_raw(ui);			
+            }
             
                 this.workspace.query.move_dimension(dimension, 
                     target, index);
@@ -672,7 +677,59 @@ var WorkspaceDropZone = Backbone.View.extend({
         return false;
     },
 
+ remove_raw:function(ui){
+ 
+        // Reenable original element
+        var $source = ui.item;	//selected dimension	
+		var $current_li=null; // first element of dimension
+		var count=0;
+		var wkspace=this.workspace;
+		$('div .filter .connectable').find('.d_dimension a').each(function( i ) {
+				if($(this).attr('rel').split('.')[0]==$source.find('a').attr('rel').split('.')[0]){
+						if($(this).attr('rel')!= $source.find('a').attr('rel')){
+							$current_li=$(this).parent();
+							
+							var original_href = $current_li.find('a').attr('href');//$source.find('a').attr('href');
+							var $original = $(wkspace.el).find('.sidebar')
+								.find('a[href="' + original_href + '"]').parent('li');
+							$original
+								.draggable('enable')
+								.css({ fontWeight: 'normal' });
+							
+							// Unhighlight the parent if applicable
+							if ($original.parents('.parent_dimension')
+									.children().children('.ui-state-disabled').length === 0) {
+								$original.parents('.parent_dimension')
+									.find('.folder_collapsed')
+									.css({fontWeight: "normal"});
+							}
+							
+							// Notify server
+							var target = '';
+							var dimension = original_href.replace('#', '');
+							$target_el = $source.parent().parent('div.fields_list_body');
 
+							
+							var url = "/axis/" + "FILTER" + "/dimension/" + dimension;
+							wkspace.query.action.del(url, {
+								success: wkspace.query.run
+							});
+							// Remove UI element
+							$current_li.remove();
+							
+							
+							if ($target_el.find('li.d_dimension, li.d_measure, li.ui-draggable').length == 0) {
+								$target_el.siblings('.clear_axis').addClass('hide');
+							}        
+							var level=dimension.split('/');
+							delete filterCollections[level[level.length-1]];
+			
+						}						
+					}
+				
+			});		       
+       	 return false;
+	},
     remove_dimension: function(event, ui) {
         // Reenable original element
         var $source = ui ? ui.draggable : $(event.target).parent();
