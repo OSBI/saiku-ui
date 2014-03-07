@@ -18,9 +18,9 @@
  * Model which fetches the dimensions and measures of a cube
  */
 var Cube = Backbone.Model.extend({
-    initialize: function(args) {
-        this.url = Saiku.session.username + "/discover/" +
-            args.key + "/metadata";
+	initialize: function(args) {
+        this.url = encodeURI(Saiku.session.username + "/discover/" +
+        args.key + "/metadata");
     },
     
     parse: function(response) {
