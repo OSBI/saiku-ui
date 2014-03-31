@@ -460,7 +460,7 @@ textarea, select {
     padding: 10px 10px 0 10px;
 }
 .fields_list {
-    min-width: 820px;
+    min-width: inherit;
     border: 1px solid #CCC;
     margin-bottom: 10px;
     border-radius: 5px;
@@ -469,7 +469,11 @@ textarea, select {
     box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.10);
     -moz-box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.10);
     -webkit-box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.10);
-
+    display: -webkit-box;
+    display: -moz-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
 }
 .fields_list .fields_list_header {
     background-color: #E6E6E6;
@@ -477,12 +481,16 @@ textarea, select {
     background: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#E6E6E6));
     background: -moz-linear-gradient(top, #FFFFFF 0%, #E6E6E6 100%);
     border-right: 1px solid #CCC;
-    float: left;
     font-weight: bold;
     padding: 3px 5px 3px 10px;
     line-height: 28px;
     min-width: 80px;
     border-radius: 5px 0px 0px 5px;
+    -webkit-box-flex: 1;
+    -moz-box-flex: 1;
+    -webkit-flex: 1;
+    -ms-flex: 1;
+    flex: 1;
 }
 .fields_list .limit {
     cursor: pointer;
@@ -532,9 +540,7 @@ span.clear_axis {
     background-color: #CCC ;    
 }
 
-
 .fields_list .fields_list_body {
-    float: left;
     padding:  0;
     margin-right: 37px;
     width: 85%;
