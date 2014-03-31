@@ -469,7 +469,10 @@ textarea, select {
     box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.10);
     -moz-box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.10);
     -webkit-box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.10);
-
+    display: -moz-box;         /* OLD - Firefox 19- (buggy but mostly works) */
+    display: -webkit-flex;     /* NEW - Chrome */
+    display: -ms-flexbox;      /* TWEENER - IE 10 */
+    display: flex;             /* NEW, Spec - Opera 12.1, Firefox 20+ */
 }
 .fields_list .fields_list_header {
     background-color: #E6E6E6;
@@ -483,6 +486,10 @@ textarea, select {
     line-height: 28px;
     min-width: 80px;
     border-radius: 5px 0px 0px 5px;
+    -moz-box-flex: auto;       /* OLD - Firefox 19- */
+    -webkit-flex: auto;        /* Chrome */
+    -ms-flex: auto;            /* IE 10 */
+    flex: auto;                /* NEW, Spec - Opera 12.1, Firefox 20+ */
 }
 .fields_list .limit {
     cursor: pointer;
