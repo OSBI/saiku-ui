@@ -93,7 +93,7 @@ var SessionWorkspace = Backbone.Model.extend({
                 session: this
             });
         } else {
-            if (!Settings.INITIAL_QUERY) {
+            if (!Settings.INITIAL_QUERY && !Settings.BIPLUGIN5) {
                 Saiku.tabs.add(new Workspace());
             }
 
