@@ -723,7 +723,7 @@ var AdminConsole = Backbone.View.extend({
 
         var s = this.schemas.get(path);
         var that = this;
-        s.destroy({wait:true, success: function(){this.fetch_schemas();$(that.el).find('.user_info').html("");}})
+        s.destroy({wait:true, success: function(){that.fetch_schemas();$(that.el).find('.user_info').html("");}})
     },
     remove_user : function(event){
         event.preventDefault();
