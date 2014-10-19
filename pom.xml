@@ -1,9 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <parent>
+        <artifactId>saiku</artifactId>
+        <groupId>org.saiku</groupId>
+        <version>3.0-GA</version>
+    </parent>
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.saiku</groupId>
 	<artifactId>saiku-ui</artifactId>
-	<packaging>pom</packaging>
+	<packaging>war</packaging>
 	<version>3.0-GA</version>
 	<build>
 		<plugins>
@@ -126,8 +130,8 @@
 						</goals>
 						<configuration>
 							<tasks>
-							<mkdir dir="target/saiku-ui" />
-								<copy todir="target/saiku-ui">
+							<mkdir dir="target/saiku-ui-3.0-GA" />
+								<copy todir="target/saiku-ui-3.0-GA">
 									<fileset dir="${basedir}/">
                                         <exclude name="target/" />
                                         <exclude name="pom.xml" />
@@ -143,18 +147,18 @@
 									<fileset dir="${basedir}/target/jsdoc"/>
 								</copy>
 -->
-								<zip destfile="target/saiku-ui-${project.version}.zip">
+<!--								<zip destfile="target/saiku-ui-${project.version}.zip">
 									<zipfileset dir="target/saiku-ui/" />
 								</zip>
 								<zip destfile="target/saiku-ui-${project.version}.war">
 									<zipfileset dir="target/saiku-ui/" />
-								</zip>
+								</zip>-->
 							</tasks>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
+<!--			<plugin>
 			    <groupId>org.codehaus.mojo</groupId>
 			    <artifactId>build-helper-maven-plugin</artifactId>
 			    <version>1.7</version>
@@ -179,7 +183,20 @@
 			            </configuration>
 			        </execution>
 			    </executions>
-			</plugin>
+			</plugin>-->
+       <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <webResources>
+                        <resource>
+                            <!-- this is relative to the pom.xml directory -->
+                            <directory>.</directory>
+                        </resource>
+                    </webResources>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                </configuration>
+            </plugin>
 
 		</plugins>
 	</build>
