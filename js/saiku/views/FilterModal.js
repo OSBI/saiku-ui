@@ -37,12 +37,12 @@ var FilterModal = Modal.extend({
     expression_text: function() {
         var c = "<form id='custom_filter'><table border='0px'>";
         if (this.expressionType == "Order") {
-            c += "<tr><td class='col1'>Sort Type: <select id='fun'><option>ASC</option><option>BASC</option><option>DESC</option><option>BDESC</option> </select></td></tr>" 
+            c += "<tr><td class='i18n'>Sort Type:</td><td class='col1'><select id='fun'><option>ASC</option><option>BASC</option><option>DESC</option><option>BDESC</option></select></td></tr>"
         }
-        c += "<tr><td class='col1'>" + this.expressionType + " MDX Expression:</td></tr>"
-             + "<tr><td class='col1'><textarea class='filter_expression'></textarea></td></tr>"
+        c += "<tr><td colspan='2' class='col1 i18n'>" + this.expressionType + " MDX Expression:</td></tr>"
+             + "<tr><td  colspan='2' class='col1'><textarea class='filter_expression'></textarea></td></tr>"
              + "</table></form>";
-        return c;
+        return c;         
     },
 
     expression: " ",
