@@ -36,14 +36,14 @@ var CustomFilterModal = Modal.extend({
 
     message: "<form id='custom_filter'>"
                      + "<table border='0px'>"
-                     + "<tr><td class='col0'>Define Filter:</td>"
-                     + "<td class='col1'><select class='function'><option>Select a Function...</option><option value='TopCount'>TopCount</option>"
+                     + "<tr><td class='col0 i18n'>Define Filter:</td>"
+                     + "<td class='col1'><select class='function'><option class='i18n'>Select a Function...</option><option value='TopCount'>TopCount</option>"
                         + "<option value='TopPercent'>TopPercent</option><option value='TopSum'>TopSum</option>"
                         + "<option value='BottomCount'>BottomCount</option><option value='BottomPercent'>BottomPercent</option>"
                         + "<option value='BottomSum'>BottomSum</option></select></td></tr>"
                      + "<tr class='filter_details hide'><td><span class='ntype'></span></td><td><input class='n' /></td></tr>"
-                     + "<tr class='filter_details hide'><td>Sort by:</td>"
-                     + "<td><select class='type'><option value='measure'>Measure</option><option value='custom'>MDX Expression</option></select></td></tr>"
+                     + "<tr class='filter_details hide'><td class='i18n'>Sort by:</td>"
+                     + "<td><select class='type'><option value='measure' class='i18n'>Measure</option><option value='custom' class='i18n'>MDX Expression</option></select></td></tr>"
                      + "<tr class='filter_details hide'><td>&nbsp;</td><td class='sortingoption'>&nbsp;</td>"
                      + "</table></form>",
 
@@ -117,7 +117,8 @@ var CustomFilterModal = Modal.extend({
             $(this.el).find('.filter_details').hide();
         } else {
             var ntype = val.replace('Top','').replace('Bottom','');
-            $(this.el).find('.ntype').html(ntype + ":")
+            $(this.el).find('.ntype').html(ntype + ":").addClass('i18n');
+            Saiku.i18n.translate($(this.el));            
             $(this.el).find('.filter_details').show();
             $(this.el).find('.sortingoption').html('').html(this.measure_list);
         }
