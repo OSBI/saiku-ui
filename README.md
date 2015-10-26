@@ -1,4 +1,4 @@
-# This repository has been merged into the Saiku main repository and will not be updated.
+# This repository has been merged into the [Saiku](https://github.com/OSBI/saiku) main repository and will not be updated.
 
 # [Saiku UI](http://www.meteorite.bi) [![Saiku Analytics on Slack](http://chat.meteorite.bi/badge.svg)](http://chat.meteorite.bi/)
 
